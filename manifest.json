@@ -1,0 +1,17 @@
+{
+	"name": "Simple new tab page",
+	"description": "Override the new tab page with a simple one",
+	"version": "0.1",
+	"incognito": "split",
+	"chrome_url_overrides": {
+		"newtab": "new-tab.html"
+	},
+	"permissions": [
+		"bookmarks",
+		"chrome://favicon/"
+	],
+	"background": {
+    "scripts": ["background.js"]
+  },
+	"manifest_version": 2
+}

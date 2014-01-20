@@ -1,0 +1,62 @@
+
+* {
+	position: relative;
+	box-sizing: border-box;
+}
+
+html {
+	height: 100%;
+	background: #fff;
+}
+
+body {
+	font-family: sans-serif;
+	font-weight: normal;
+	font-size: 16px;
+	line-height: 1.2;
+	min-width: 320px;
+	margin: 0 auto;
+	background: #fff;
+	color: #aaa;
+}
+
+a {
+	text-decoration: none;
+	color: inherit;
+}
+
+.title {
+	text-align: center;
+	font-size: 300%;
+}
+
+.bookmarks {
+	font-size: 120%;
+	width: 80%;
+	margin: 2em auto;
+}
+
+.bookmarks > li {
+	display: inline-block;
+	height: 3em;
+	width: 11em;
+	border-radius: .5em;
+	border: 2px solid #eee;
+	margin: 1em;
+	line-height: 3em;
+	vertical-align: middle;
+	padding: 0 .5em;
+	background: #f9f9f9;
+}
+
+.bookmarks > li > a {
+	display: block;
+	height: 100%;
+}
+
+.favicon {
+	display: inline-block;
+	height: 1em;
+	width: 1em;
+	top: 2px;
+}
