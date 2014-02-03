@@ -13,7 +13,7 @@
 		var html = '';
 
 	  bookmarks.forEach(function(bookmark) {
-			html += "<li><a href='" + bookmark.url + "'><img class='favicon' src='chrome://favicon/" + bookmark.url + "' /> " + bookmark.title + "</a></li>";
+			html += "<li><a href='" + bookmark.url + "'><img class='favicon' src='chrome://favicon/" + bookmark.url + "' />" + bookmark.title + "</a></li>";
 	  });
 
 	  ul.innerHTML = html;
