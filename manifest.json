@@ -4,14 +4,14 @@
 	"version": "0.1",
 	"incognito": "split",
 	"chrome_url_overrides": {
-		"newtab": "new-tab.html"
+		"newtab": "index.html"
 	},
 	"permissions": [
 		"bookmarks",
 		"chrome://favicon/"
 	],
 	"background": {
-    "scripts": ["background.js"]
-  },
+    	"scripts": ["js/background.js"]
+  	},
 	"manifest_version": 2
 }
