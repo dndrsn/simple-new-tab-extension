@@ -3,6 +3,13 @@
 
 (function() {
 
+  console.log('=== here');
+
+  chrome.bookmarks.getTree(tree => {
+    console.log('==== bookmarks tree:', tree);
+  });
+
+
   var bgPage = chrome.extension.getBackgroundPage();
   var bookmarks = bgPage.getBookmarks();
   var div = document.querySelector('div.bookmarks');
