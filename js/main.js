@@ -3,48 +3,42 @@
 
 (function() {
 
-	var bgPage = chrome.extension.getBackgroundPage();
-	var bookmarks = bgPage.getBookmarks();
-	var div = document.querySelector('div.bookmarks');
+  var bgPage = chrome.extension.getBackgroundPage();
+  var bookmarks = bgPage.getBookmarks();
+  var div = document.querySelector('div.bookmarks');
 
+  bookmarks.search('Favorites', nodes => {
 
-	function printBookmarks() {
+    bookmarks.getChildren(nodes[0].id, function(groups) {
 
-		// get the bookmarks bar groups
-		bookmarks.getChildren('1', function(groups) {
+      _(groups).forEach(function(group) {
+        var groupDiv = document.createElement('div');
+        groupDiv.className = 'group';
+        var title = document.createElement('div');
+        title.className= 'title';
+        title.innerHTML = group.title;
+        groupDiv.appendChild(title);
+        var ul = document.createElement('ul');
+        ul.class='links';
+        groupDiv.appendChild(ul);
+        div.appendChild(groupDiv);
 
-			// loop through each group
-			_(groups).forEach(function(group) {
+        bookmarks.getChildren(group.id, function(children){
 
-				console.log("group: " + group.title);
+          _(children).forEach(function(link) {
+            var li = document.createElement('li');
+            li.innerHTML = `
+              <a href="${ link.url }">
+                <img class="favicon" src="chrome://favicon/${ link.url }" />${ link.title }
+              </a>
+            `;
+            ul.appendChild(li);
+          });
 
-				var groupDiv = document.createElement("div");
-				groupDiv.className = "group";
-				var title = document.createElement("div");
-				title.className= "title";
-				title.innerHTML = group.title;
-				groupDiv.appendChild(title);
-				var ul = document.createElement("ul");
-				ul.class="links";
-				groupDiv.appendChild(ul);
-				div.appendChild(groupDiv);
-
-				bookmarks.getChildren(group.id, function(children){
-
-					_(children).forEach(function(link) {
-						console.log("link: " + link.title);
-						var li = document.createElement("li");
-						li.innerHTML = "<a href='" + link.url + "'><img class='favicon' src='chrome://favicon/" + link.url + "' />" + link.title + "</a>";
-						ul.appendChild(li);
-					});
-
-				});
-			});
-		});
-	}
-
-
-	printBookmarks();
+        });
+      });
+    });
+  });
 
 })();
 
