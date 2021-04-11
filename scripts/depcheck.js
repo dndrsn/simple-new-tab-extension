@@ -9,7 +9,7 @@ const chalk = require('chalk');
 const { log } = require('../lib/logging');
 
 
-const depcheckOptions = require('../.depcheckrc');
+const depcheckConfig = require('../depcheck.config');
 
 
 const yarnRemoveCommand = packages => 'yarn remove ' + packages.join(' ');
@@ -32,7 +32,7 @@ const formatDependencies = dependencies => {
 const checkDependencies = async () => {
 
   log.debug('Dependencies :: checking dependencies');
-  const result = await depcheck(process.cwd(), depcheckOptions);
+  const result = await depcheck(process.cwd(), depcheckConfig);
   if (first(result.dependencies)) {
     log.info('Dependencies :: unused dependencies:\n\n' + formatDependencies(result.dependencies) + '\n');
     log.debug(

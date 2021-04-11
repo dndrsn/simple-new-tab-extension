@@ -8,6 +8,8 @@
     "@vshift/common": "git+https://bitbucket.org/vshift/vshift-common.git#1.20",
     "chalk": "^4.1.0",
     "dayjs": "^1.10.4",
+    "esbuild": "^0.11.8",
+    "esbuild-plugin-sass": "^0.4.1",
     "eslint": "^7.24.0",
     "fs-extra": "^9.1.0",
     "lodash": "^4.17.21",
@@ -31,11 +33,9 @@
   "scripts": {
     "prepare": "husky install",
     "pre-commit": "lint-staged",
-    "start": "node ./scripts/server --mode=development",
-    "clean": "node ./scripts/clean",
-    "compile": "node ./scripts/compile",
-    "build": "yarn clean && yarn compile",
     "lint": "node ./scripts/lint",
+    "clean": "node ./scripts/clean",
+    "build": "node ./scripts/build",
     "script": "node ./scripts/_run-script"
   }
 }

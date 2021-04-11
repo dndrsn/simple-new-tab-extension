@@ -1,23 +1,25 @@
 
+$white: #fff;
+$gray-dark: #666;
+$gray: #999;
+
+$font-size-base: 1em;
+$font-size-lg: 1.1em;
+$font-size-xl: 1.3em;
+
+
 * {
   position: relative;
   box-sizing: border-box;
 }
 
-html {
-  height: 100%;
-  background: #fff;
-}
-
 body {
-  font-family: helvetica neue, helvetica, sans-serif;
-  font-weight: normal;
-  font-size: 16px;
+  font-family: 'helvetica neue', 'helvetica', sans-serif;
   line-height: 1.2;
   min-width: 320px;
   margin: 0 auto;
-  background: #fff;
-  color: #999;
+  background: $white;
+  color: $gray-dark;
 }
 
 a {
@@ -27,7 +29,7 @@ a {
 }
 
 a:hover {
-  color: #666;
+  color: $gray-dark;
 }
 
 .bookmarks {
@@ -41,13 +43,13 @@ a:hover {
 }
 
 .bookmarks .group .title {
-  font-size: 130%;
-  border-bottom: 1px solid #999;
+  font-size: $font-size-xl;
+  border-bottom: 1px solid $gray;
 }
 
 .bookmarks a {
   display: block;
-  font-size: 110%;
+  font-size: $font-size-lg;
 }
 
 .favicon {
