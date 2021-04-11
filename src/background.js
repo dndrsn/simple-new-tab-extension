@@ -9,7 +9,6 @@ window.getBookmarks = function() {
   return chrome.bookmarks;
 };
 
-
 chrome.bookmarks.getTree(tree => {
   log.debug('==== bookmarks tree:', tree);
 });

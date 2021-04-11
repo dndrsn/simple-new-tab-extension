@@ -1,35 +1,63 @@
 const esbuild = require('esbuild');
-const yaml = require('js-yaml');
-const fse = require('fs-extra');
 const cpx = require('cpx');
-const path = require('path');
 const { each } = require('lodash');
 
+const { log } = require('../lib/logging');
+const Configuration = require('../lib/configuration');
 const esbuildConfig = require('../esbuild.config');
+const copyConfig = require('../copy.config');
 
 
-const copyConfig = yaml.load(fse.readFileSync('copy.config.yml'));
-
-
-const compile = async () => {
-  try {
-    await esbuild.build(esbuildConfig);
-  }
-  catch {
-    process.exit(1);
-  }
-};
-
-
-const copy = async () => {
-  each(copyConfig.sources, source => {
-    const sourcePath = typeof source === 'string' ? source : source.path;
-    const destPath = source.context ? path.join(copyConfig.dest, source.context) : copyConfig.dest;
-    cpx.copy(sourcePath, destPath);
+const compile = async ({ watch } = {}) => {
+  const result = await esbuild.build({
+    ...esbuildConfig,
+    watch: watch && {
+      onRebuild(error, result) {
+        if (error) log.error('Build :: source compile failed:', error);
+        else log.debug('Build :: source (re)compiled:', result);
+      },
+    },
   });
+  if (!watch) log.debug('Build :: source compiled:', result);
 };
 
 
-compile();
-copy();
+const copy = async ({ watch } = {}) => {
+
+  if (watch) {
+    each(copyConfig.rules, rule => {
+      const { from, to, options } = rule;
+      cpx.watch(from, to, options);
+    });
+  }
+  else {
+    const promises = [];
+    each(copyConfig.rules, rule => {
+      promises.push(new Promise(resolve => {
+        const { from, to, options } = rule;
+        cpx.copy(from, to, options, resolve);
+      }));
+    });
+    await Promise.all(promises);
+    log.debug('Build :: source copied');
+  }
+};
+
+
+const main = async () => {
+
+  const options = [
+    { key: 'watch', type: 'boolean' },
+  ];
+
+  const config = new Configuration({ options });
+
+  log.debug('=== config:', config);
+
+  compile(config);
+  copy(config);
+};
+
+
+main();
 

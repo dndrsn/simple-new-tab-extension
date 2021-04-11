@@ -1,7 +1,0 @@
-
-sources:
-  - ./src/index.html
-  - ./src/manifest.json
-  - path: ./src/assets/**/*
-    context: assets/
-dest: pub

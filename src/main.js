@@ -1,11 +1,13 @@
 
-// import log from 'loglevel';
+import log from 'loglevel';
 import { each } from 'lodash-es';
 
 
+log.setDefaultLevel('debug');
+
+
 const { chrome } = window;
-const bgPage = chrome.extension.getBackgroundPage();
-const bookmarks = bgPage.getBookmarks();
+const bookmarks = chrome.bookmarks;
 const div = document.querySelector('div.bookmarks');
 
 
