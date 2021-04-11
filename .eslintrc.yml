@@ -1,0 +1,3 @@
+
+extends:
+  - './node_modules/@vshift/common/configs/eslint-config-default.yml'
