@@ -1,17 +1,53 @@
 
 import log from 'loglevel';
-import { each } from 'lodash-es';
+import { each, find } from 'lodash-es';
+
+
+const SNT_BOOKMARKS_PATH = 'Other Bookmarks/Favorites';
 
 
 log.setDefaultLevel('debug');
 
 
 const { chrome } = window;
+
+
+// const parseBookmarksTreeNode = ({ title, url, children }) => ({
+//   title,
+//   url,
+//   children: map(children, childNode => parseBookmarksTreeNode(childNode)),
+// });
+
+
+const getBookmarksTree = async () => new Promise(resolve => chrome.bookmarks.getTree(resolve));
+
+
+const getBookmarksTreeNode = async path => {
+  const bookmarksTree = await getBookmarksTree();
+  const pathElems = path.split('/');
+  let pathNode = bookmarksTree[0];
+  each(pathElems, pathElem => {
+    pathNode = find(pathNode?.children, { title: pathElem });
+  });
+  return pathNode;
+};
+
+
+const main = async () => {
+  const bookmarksTreeNode = await getBookmarksTreeNode(SNT_BOOKMARKS_PATH);
+  log.debug('=== bookmarksTreeNode:', bookmarksTreeNode);
+};
+
+
+main();
+
+
+/*
 const bookmarks = chrome.bookmarks;
 const div = document.querySelector('div.bookmarks');
 
 
-bookmarks.search('Favorites', nodes => {
+bookmarks.search('Bookmarks Bar', nodes => {
 
   bookmarks.getChildren(nodes[0].id, function(groups) {
 
@@ -43,4 +79,4 @@ bookmarks.search('Favorites', nodes => {
     });
   });
 });
-
+*/
