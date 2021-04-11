@@ -47,7 +47,7 @@ async function lintSass() {
 
 async function lint() {
   let success = true;
-  if (await lintSass()) success = false;
+  // if (await lintSass()) success = false;
   if (await lintJs()) success = false;
   if (success) log.debug('Lint :: files linted with no issues');
   else log.warn('Lint :: file linting failed with errors and/or warnings');

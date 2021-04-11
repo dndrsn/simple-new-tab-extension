@@ -1,53 +1,44 @@
 
-/*globals chrome,_ */
-
-(function() {
-
-  console.log('=== here');
-
-  chrome.bookmarks.getTree(tree => {
-    console.log('==== bookmarks tree:', tree);
-  });
+// import log from 'loglevel';
+import { each } from 'lodash-es';
 
 
-  var bgPage = chrome.extension.getBackgroundPage();
-  var bookmarks = bgPage.getBookmarks();
-  var div = document.querySelector('div.bookmarks');
+const { chrome } = window;
+const bgPage = chrome.extension.getBackgroundPage();
+const bookmarks = bgPage.getBookmarks();
+const div = document.querySelector('div.bookmarks');
 
-  bookmarks.search('Favorites', nodes => {
 
-    bookmarks.getChildren(nodes[0].id, function(groups) {
+bookmarks.search('Favorites', nodes => {
 
-      _(groups).forEach(function(group) {
-        var groupDiv = document.createElement('div');
-        groupDiv.className = 'group';
-        var title = document.createElement('div');
-        title.className= 'title';
-        title.innerHTML = group.title;
-        groupDiv.appendChild(title);
-        var ul = document.createElement('ul');
-        ul.class='links';
-        groupDiv.appendChild(ul);
-        div.appendChild(groupDiv);
+  bookmarks.getChildren(nodes[0].id, function(groups) {
 
-        bookmarks.getChildren(group.id, function(children){
+    each(groups, group => {
+      const groupDiv = document.createElement('div');
+      groupDiv.className = 'group';
+      const title = document.createElement('div');
+      title.className = 'title';
+      title.innerHTML = group.title;
+      groupDiv.appendChild(title);
+      const ul = document.createElement('ul');
+      ul.class = 'links';
+      groupDiv.appendChild(ul);
+      div.appendChild(groupDiv);
 
-          _(children).forEach(function(link) {
-            var li = document.createElement('li');
-            li.innerHTML = `
-              <a href="${ link.url }">
-                <img class="favicon" src="chrome://favicon/${ link.url }" />${ link.title }
-              </a>
-            `;
-            ul.appendChild(li);
-          });
+      bookmarks.getChildren(group.id, children => {
 
+        each(children, link => {
+          const li = document.createElement('li');
+          li.innerHTML = `
+            <a href="${link.url}">
+              <img class="favicon" src="chrome://favicon/${link.url}" />${link.title}
+            </a>
+          `;
+          ul.appendChild(li);
         });
+
       });
     });
   });
-
-})();
-
-
+});
 

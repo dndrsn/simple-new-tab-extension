@@ -1,37 +1,16 @@
 require('module-alias/register');
 
 const depcheck = require('depcheck');
-const { defaultOptions } = require('depcheck/dist/constants');
 const { each, first, isArray, isEmpty, keys, map } = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const chalk = require('chalk');
 
 const { log } = require('../lib/logging');
-const scssParser = require('../lib/depcheck/depcheck-scss-parser');
-const webpackSpecial = require('../lib/depcheck/depcheck-webpack-special');
 
 
-const depcheckOptions = {
-  ignoreMatches: [
-    '~',
-    'core-js',
-  ],
-  ignorePatterns: [
-    // @TODO: use gitinore for this
-    'pub',
-    'dist',
-    'src/config.js',
-  ],
-  parsers: {
-    ...defaultOptions.parsers,
-    '**/*.scss': scssParser,
-  },
-  specials: [
-    ...defaultOptions.specials,
-    webpackSpecial,
-  ],
-};
+const depcheckOptions = require('../.depcheckrc');
+
 
 const yarnRemoveCommand = packages => 'yarn remove ' + packages.join(' ');
 

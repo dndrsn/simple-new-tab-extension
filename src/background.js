@@ -1,25 +1,17 @@
 
-/*globals chrome */
+import log from 'loglevel';
 
 
-
-(function() {
-
-  "use strict";
-
-  console.log('==== i am here too');
+const { chrome } = window;
 
 
-  window.bookmarks = chrome.bookmarks;
-
-  window.getBookmarks = function() {
-    return chrome.bookmarks;
-  };
+window.getBookmarks = function() {
+  return chrome.bookmarks;
+};
 
 
-  chrome.bookmarks.getTree(tree => {
-    console.log('==== bookmarks tree:', tree);
-  });
+chrome.bookmarks.getTree(tree => {
+  log.debug('==== bookmarks tree:', tree);
+});
 
 
-})();
