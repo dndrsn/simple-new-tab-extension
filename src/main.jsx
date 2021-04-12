@@ -7,6 +7,9 @@ import log from 'loglevel';
 import { each, find, map } from 'lodash-es';
 
 
+import './main.scss';
+
+
 const SNT_BOOKMARKS_PATH = 'Other Bookmarks/Favorites';
 
 

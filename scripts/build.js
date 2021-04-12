@@ -13,12 +13,16 @@ const compile = async ({ watch } = {}) => {
     ...esbuildConfig,
     watch: watch && {
       onRebuild(error, result) {
-        if (error) log.error('Build :: source compile failed:', error.message);
-        else log.debug('Build :: source (re)compiled:', result);
+        if (error) log.error('Build :: source (re)compiled with error');
+        else {
+          // @TODO format warnings here
+          log.debug('Build :: source (re)compiled:', result);
+        }
       },
     },
   });
-  log.debug('Build :: source compiled:', result);
+  // @TODO format warnings here
+  if (!watch) log.debug('Build :: source compiled:', result);
 };
 
 
