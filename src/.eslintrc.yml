@@ -1,5 +1,5 @@
 extends:
   - '../node_modules/@vshift/common/configs/eslint-config-react.yml'
-rules:
-  react/jsx-uses-react: 'off'
-  react/react-in-jsx-scope: 'off'
+# rules:
+#   react/jsx-uses-react: 'off'
+#   react/react-in-jsx-scope: 'off'

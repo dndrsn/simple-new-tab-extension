@@ -13,12 +13,12 @@ const compile = async ({ watch } = {}) => {
     ...esbuildConfig,
     watch: watch && {
       onRebuild(error, result) {
-        if (error) log.error('Build :: source compile failed:', error);
+        if (error) log.error('Build :: source compile failed:', error.message);
         else log.debug('Build :: source (re)compiled:', result);
       },
     },
   });
-  if (!watch) log.debug('Build :: source compiled:', result);
+  log.debug('Build :: source compiled:', result);
 };
 
 
@@ -27,7 +27,13 @@ const copy = async ({ watch } = {}) => {
   if (watch) {
     each(copyConfig.rules, rule => {
       const { from, to, options } = rule;
-      cpx.watch(from, to, options);
+      const watchEvents = cpx.watch(from, to, options);
+      watchEvents.on('watch-ready', () => {
+        log.debug('Build :: initial source copied:', from);
+      });
+      // watchEvents.on('copy', e => {
+      //   if (!isFirstCopy) log.debug('Build :: source updated:', e.srcPath);
+      // });
     });
   }
   else {
@@ -51,8 +57,6 @@ const main = async () => {
   ];
 
   const config = new Configuration({ options });
-
-  log.debug('=== config:', config);
 
   compile(config);
   copy(config);

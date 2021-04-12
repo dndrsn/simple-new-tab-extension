@@ -1,17 +1,20 @@
 
-const sassPlugin = require('esbuild-plugin-sass');
+const { sassPlugin } = require('esbuild-sass-plugin');
 
 
 module.exports = {
   entryPoints: [
-    'src/main.js',
+    'src/main.jsx',
     'src/main.scss',
   ],
   bundle: true,
   sourcemap: 'inline',
   outdir: 'pub',
   plugins: [
-    sassPlugin(),
+    sassPlugin({
+      cache: true,
+      includePaths: ['node_modules'],
+    }),
   ],
 };
 
