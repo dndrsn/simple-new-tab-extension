@@ -24,3 +24,11 @@ $container-padding-x: $grid-gutter-width;
 
 @import 'bootstrap/scss/bootstrap';
 
+
+.bookmark {
+  &__icon {
+    height: 1em;
+    width: 1em;
+  }
+}
+

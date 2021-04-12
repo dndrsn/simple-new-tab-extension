@@ -13,7 +13,7 @@ module.exports = {
   outdir: 'pub',
   plugins: [
     sassPlugin({
-      // cache: false,
+      // cache: true,
       includePaths: ['node_modules'],
       sourceMap: true,
       sourceMapEmbed: true,

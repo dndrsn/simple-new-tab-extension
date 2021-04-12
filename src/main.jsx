@@ -36,7 +36,7 @@ const getBookmarksTreeNode = async path => {
 const BookmarkIcon = ({ className, url }) => {
   return (
     <span className={className}>
-      <img className="mt-1" alt="favicon" src={`chrome://favicon/${url}`} />
+      <img className="bookmark__icon mt-1" alt="favicon" src={`chrome://favicon/${url}`} />
     </span>
   );
 };
@@ -44,7 +44,7 @@ const BookmarkIcon = ({ className, url }) => {
 
 const Bookmark = ({ title, url }) => {
   return (
-    <a className="list-group-item list-group-item-action px-3 py-2" href={url}>
+    <a className="bookmark list-group-item list-group-item-action px-3 py-2" href={url}>
       <div className="d-flex">
         <BookmarkIcon className="mr-2" url={url} />
         {title}
