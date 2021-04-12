@@ -25,6 +25,14 @@ $container-padding-x: $grid-gutter-width;
 @import 'bootstrap/scss/bootstrap';
 
 
+.bookmark-group {
+  &__title {
+    background: $gray-400;
+    // color: $white;
+  }
+}
+
+
 .bookmark {
   &__icon {
     height: 1em;

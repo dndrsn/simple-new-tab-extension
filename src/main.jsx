@@ -57,8 +57,10 @@ const Bookmark = ({ title, url }) => {
 const BookmarkGroup = ({ title, children }) => {
   return (
     <div className="bookmark-group mb-4">
-      <h2 className="h5 mx-3">{title}</h2>
       <div className="list-group">
+        <div className="bookmark-group__title list-group-item px-3 py-2">
+          <h2 className="h5 mb-0">{title}</h2>
+        </div>
         {map(children, (child, i) => (
           <Bookmark key={child.url + '_' + i} {...child} />
         ))}
@@ -92,7 +94,7 @@ const BookmarkGroups = () => {
 
 const App = () => {
   return (
-    <div className="container-xxl mt-4">
+    <div className="container-xxl mt-5">
       <h1 className="d-none">Simple New Tab Page</h1>
       <BookmarkGroups />
     </div>
