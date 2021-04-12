@@ -15,7 +15,7 @@ module.exports = {
     sassPlugin({
       // cache: true,
       includePaths: ['node_modules'],
-      sourceMap: true,
+      sourceMap: 'out.map',
       sourceMapEmbed: true,
     }),
   ],
