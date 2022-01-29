@@ -9,7 +9,9 @@ module.exports = {
   ignoreMatches: [
     '~',
     '@vshift/common',
-    'core-js',
+    'eslint-plugin-jsx-a11y',
+    'eslint-plugin-react',
+    'eslint-plugin-react-hooks',
   ],
   ignorePatterns: [
     // @TODO: use gitinore for this

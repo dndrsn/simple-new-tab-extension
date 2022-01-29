@@ -1,6 +1,8 @@
 require('module-alias/register');
 
-const eslint = require('eslint');
+
+const { find } = require('lodash');
+const { ESLint } = require('eslint');
 const stylelint = require('stylelint');
 
 const { log } = require('../lib/logging');
@@ -9,18 +11,18 @@ const { log } = require('../lib/logging');
 async function lintJs() {
   log.debug('Lint :: linting js files');
 
-  const cli = new eslint.CLIEngine();
-  const { errorCount, warningCount, results } = cli.executeOnFiles(['.']);
-  const issueCount = errorCount + warningCount;
+  const eslint = new ESLint();
+  const results = await eslint.lintFiles(['.']);
+  const hasIssues = !!find(results, result => result.errorCount || result.warningCount);
 
-  if (issueCount > 0) {
-    const formatter = cli.getFormatter();
-    log.debug('Lint :: js lint issues:\n', formatter(results));
+  if (hasIssues) {
+    const formatter = await eslint.loadFormatter('stylish');
+    log.debug('Lint :: js lint issues:\n', formatter.format(results));
   }
   else {
     log.debug('Lint :: js lint all clear');
   }
-  return issueCount;
+  return hasIssues;
 }
 
 
