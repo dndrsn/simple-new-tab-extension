@@ -1,6 +1,4 @@
 
-// const { sassPlugin } = require('esbuild-sass-plugin');
-// const sassPlugin = require('esbuild-plugin-sass');
 const sassPlugin = require('./lib/esbuild/esbuild-plugin-sass');
 
 

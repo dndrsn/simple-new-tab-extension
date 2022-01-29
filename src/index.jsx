@@ -5,12 +5,7 @@ import { each, find, map } from 'lodash-es';
 import log from 'loglevel';
 
 
-// const SNT_BOOKMARKS_PATH = 'Other Bookmarks/Favorites';
-
-
 log.setDefaultLevel('debug');
-
-log.debug('=== here');
 
 
 const { chrome } = window;
@@ -74,7 +69,7 @@ const BookmarkGroup = ({ title, children }) => {
 
 const BookmarkGroups = () => {
 
-  const [options, setOptions] = useState({});
+  const [options, setOptions] = useState();
   const [bookmarksTreeNode, setBookmarksTreeNode] = useState(false);
 
   useEffect(() => {
@@ -82,7 +77,7 @@ const BookmarkGroups = () => {
   }, []);
 
   useEffect(async () => {
-    if (options.bookmarksPath) setBookmarksTreeNode(await getBookmarksTreeNode(options.bookmarksPath));
+    if (options?.bookmarksPath) setBookmarksTreeNode(await getBookmarksTreeNode(options.bookmarksPath));
   }, [options]);
 
   if (!options) return null;
