@@ -1,19 +1,16 @@
 
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-// import favicon from 'favicon';
-
-import log from 'loglevel';
 import { each, find, map } from 'lodash-es';
+import log from 'loglevel';
 
 
-import './main.scss';
-
-
-const SNT_BOOKMARKS_PATH = 'Other Bookmarks/Favorites';
+// const SNT_BOOKMARKS_PATH = 'Other Bookmarks/Favorites';
 
 
 log.setDefaultLevel('debug');
+
+log.debug('=== here');
 
 
 const { chrome } = window;
@@ -22,12 +19,17 @@ const { chrome } = window;
 const getBookmarksTree = async () => new Promise(resolve => chrome.bookmarks.getTree(resolve));
 
 
-const getBookmarksTreeNode = async path => {
+const getBookmarksTreeNode = async bookmarksPath => {
   const bookmarksTree = await getBookmarksTree();
-  const pathElems = path.split('/');
+
+  const pathElems = bookmarksPath.split('/');
   let pathNode = bookmarksTree[0];
   each(pathElems, pathElem => {
     pathNode = find(pathNode?.children, { title: pathElem });
+    if (!pathNode) {
+      log.warn('Unable to find boomarks path node:', pathElem);
+      return false;
+    }
   });
   return pathNode;
 };
@@ -72,13 +74,34 @@ const BookmarkGroup = ({ title, children }) => {
 
 const BookmarkGroups = () => {
 
-  const [bookmarksTreeNode, setBookmarksTreeNode] = useState();
+  const [options, setOptions] = useState({});
+  const [bookmarksTreeNode, setBookmarksTreeNode] = useState(false);
 
-  useEffect(async () => {
-    setBookmarksTreeNode(await getBookmarksTreeNode(SNT_BOOKMARKS_PATH));
+  useEffect(() => {
+    chrome.storage.sync.get('options', data => setOptions(options => ({ ...data.options, ...options })));
   }, []);
 
-  if (!bookmarksTreeNode) return null;
+  useEffect(async () => {
+    if (options.bookmarksPath) setBookmarksTreeNode(await getBookmarksTreeNode(options.bookmarksPath));
+  }, [options]);
+
+  if (!options) return null;
+
+  if (!options.bookmarksPath) return (
+    <div className="alert alert-info" role="alert">
+      Bookmarks folder not set.
+      Update the <a href="/options.html">extension options</a> to set the path of boomarks folder to display.
+    </div>
+  );
+
+  if (bookmarksTreeNode === false) return null;
+
+  if (!bookmarksTreeNode) return (
+    <div className="alert alert-warning" role="alert">
+      Bookmarks folder not found: &quot;{options.bookmarksPath}&quot;.
+      Update the <a href="/options.html">extension options</a> to set the path of boomarks folder to display.
+    </div>
+  );
 
   return (
     <div className="row">

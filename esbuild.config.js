@@ -6,7 +6,9 @@ const sassPlugin = require('./lib/esbuild/esbuild-plugin-sass');
 
 module.exports = {
   entryPoints: [
-    'src/main.jsx',
+    'src/main.scss',
+    'src/index.jsx',
+    'src/options.jsx',
   ],
   bundle: true,
   sourcemap: 'inline',

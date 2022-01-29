@@ -2,13 +2,15 @@
   "name": "Simple new tab page",
   "description": "Override the new tab page with a simple one that uses the bookmarks bar bookmarks",
   "version": "2.0.0",
+  "options_page": "options.html",
   "incognito": "split",
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
   "permissions": [
     "bookmarks",
-    "chrome://favicon/"
+    "chrome://favicon/",
+    "storage"
   ],
   "icons": {
     "16": "./assets/icons/bookmark-16.png",
