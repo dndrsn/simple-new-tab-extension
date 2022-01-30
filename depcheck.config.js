@@ -14,7 +14,7 @@ module.exports = {
     'eslint-plugin-react-hooks',
   ],
   ignorePatterns: [
-    // @TODO: use gitinore for this
+    // @TODO: use gitignore for this
     'pub',
     'dist',
   ],
