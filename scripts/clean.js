@@ -1,4 +1,3 @@
-require('module-alias/register');
 
 const fse = require('fs-extra');
 

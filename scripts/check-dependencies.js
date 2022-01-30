@@ -1,4 +1,3 @@
-require('module-alias/register');
 
 const depcheck = require('depcheck');
 const { each, first, isArray, isEmpty, keys, map } = require('lodash');

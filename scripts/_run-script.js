@@ -1,4 +1,3 @@
-require('module-alias/register');
 
 const { execSync } = require('child_process');
 

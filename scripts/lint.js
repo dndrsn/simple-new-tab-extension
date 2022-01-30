@@ -1,5 +1,3 @@
-require('module-alias/register');
-
 
 const { find } = require('lodash');
 const { ESLint } = require('eslint');
