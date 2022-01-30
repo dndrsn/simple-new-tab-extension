@@ -17,7 +17,6 @@ module.exports = {
     // @TODO: use gitinore for this
     'pub',
     'dist',
-    'src/config.js',
   ],
   parsers: {
     ...defaultOptions.parsers,

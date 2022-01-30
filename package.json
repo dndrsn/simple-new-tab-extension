@@ -1,7 +1,22 @@
 {
   "private": true,
+  "scripts": {
+    "prepare": "husky install",
+    "pre-commit": "lint-staged",
+    "lint": "node ./scripts/lint",
+    "clean": "node ./scripts/clean",
+    "build": "node ./scripts/build",
+    "script": "node ./scripts/_run-script"
+  },
+  "lint-staged": {
+    "*.{js,jsx}": "eslint --max-warnings=0",
+    "*.scss": "stylelint --mw=0"
+  },
+  "_moduleAliases": {
+    "~": "."
+  },
   "dependencies": {
-    "@vshift/common": "git+https://bitbucket.org/vshift/vshift-common.git#1.25",
+    "@vshift/common": "git+https://bitbucket.org/vshift/vshift-common.git#1.29",
     "bootstrap": "^4.6.0",
     "chalk": "^4.1.0",
     "cpx": "^1.5.0",
@@ -29,20 +44,5 @@
     "depcheck": "^1.4.0",
     "husky": "^7.0.4",
     "lint-staged": "^12.3.2"
-  },
-  "lint-staged": {
-    "*.{js,jsx}": "eslint --max-warnings=0",
-    "*.scss": "stylelint --mw=0"
-  },
-  "_moduleAliases": {
-    "~": "."
-  },
-  "scripts": {
-    "prepare": "husky install",
-    "pre-commit": "lint-staged",
-    "lint": "node ./scripts/lint",
-    "clean": "node ./scripts/clean",
-    "build": "node ./scripts/build",
-    "script": "node ./scripts/_run-script"
   }
 }
