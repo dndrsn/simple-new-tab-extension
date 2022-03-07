@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { each, find, map } from 'lodash-es';
 import log from 'loglevel';
@@ -31,17 +31,17 @@ const getBookmarksTreeNode = async bookmarksPath => {
 
 
 const BookmarkIcon = ({ url }) => {
+
+  // const iconUrl = (
+  //   `https://t1.gstatic.com/faviconV2` +
+  //   `?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=128&url=${url}`
+  // );
+
+  const iconUrl = useBookmarkIconUrl(url);
+
   return (
     <span className="mr-2 d-block">
-      <img
-        className="bookmark__icon d-block"
-        alt="favicon"
-        // eslint-disable-next-line max-len
-        src={
-          `https://t1.gstatic.com/faviconV2` +
-          `?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=128&url=${url}`
-        }
-      />
+      <img className="bookmark__icon d-block" alt="favicon" src={iconUrl} />
     </span>
   );
 };
@@ -125,6 +125,33 @@ const App = () => {
       <BookmarkGroups />
     </div>
   );
+};
+
+
+const isValidImageUlr = async url => new Promise(resolve => {
+  const image = new window.Image();
+  image.addEventListener('load', () => resolve(true));
+  image.addEventListener('error', () => resolve(false));
+  image.src = url;
+});
+
+
+const useBookmarkIconUrl = pageUrl => {
+
+  const [iconUrl, setIconUrl] = useState('/assets/icons/globe-gray.svg');
+
+  const updateBookmarkIconUrl = async () => {
+    const { origin } = new URL(pageUrl);
+    each(['/favicon.ico', '/favicon.png', '/favicon-16x16.png'], async path => {
+      const url = origin + path;
+      if (await isValidImageUlr(url)) return setIconUrl(url);
+    });
+  };
+
+  useEffect(() => {
+    updateBookmarkIconUrl();
+  }, [pageUrl]);
+  return iconUrl;
 };
 
 
