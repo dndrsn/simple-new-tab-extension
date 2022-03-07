@@ -30,10 +30,18 @@ const getBookmarksTreeNode = async bookmarksPath => {
 };
 
 
-const BookmarkIcon = ({ className, url }) => {
+const BookmarkIcon = ({ url }) => {
   return (
-    <span className={className}>
-      <img className="bookmark__icon mt-1" alt="favicon" src={`chrome://favicon/${url}`} />
+    <span className="mr-2 d-block">
+      <img
+        className="bookmark__icon d-block"
+        alt="favicon"
+        // eslint-disable-next-line max-len
+        src={
+          `https://t1.gstatic.com/faviconV2` +
+          `?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=128&url=${url}`
+        }
+      />
     </span>
   );
 };
@@ -42,8 +50,8 @@ const BookmarkIcon = ({ className, url }) => {
 const Bookmark = ({ title, url }) => {
   return (
     <a className="bookmark list-group-item list-group-item-action px-3 py-2" href={url}>
-      <div className="d-flex">
-        <BookmarkIcon className="mr-2" url={url} />
+      <div className="d-flex align-items-center">
+        <BookmarkIcon url={url} />
         {title}
       </div>
     </a>
