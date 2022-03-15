@@ -2,8 +2,11 @@
   "name": "Simple new tab page",
   "description": "Override the new tab page with a simple one that uses the bookmarks bar bookmarks",
   "version": "0.8",
-  "options_page": "options.html",
   "incognito": "split",
+  "background": {
+    "service_worker": "background.js"
+  },
+  "options_page": "options.html",
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
@@ -18,6 +21,9 @@
     "32": "./assets/icons/bookmark-32.png",
     "36": "./assets/icons/bookmark-36.png",
     "72": "./assets/icons/bookmark-72.png"
+  },
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; connect-src http://* https://* data: blob: filesystem:;"
   },
   "manifest_version": 3
 }

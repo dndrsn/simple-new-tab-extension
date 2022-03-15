@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { each, find, map } from 'lodash-es';
+import { debounce, each, find, map } from 'lodash-es';
 import log from 'loglevel';
 
 
@@ -9,6 +9,12 @@ log.setDefaultLevel('debug');
 
 
 const { chrome } = window;
+
+
+const getStorage = (...args) => chrome.storage.sync.get(...args);
+
+
+const setStorage = debounce((...args) => chrome.storage.sync.set(...args), 250);
 
 
 const getBookmarksTree = async () => new Promise(resolve => chrome.bookmarks.getTree(resolve));
@@ -27,6 +33,91 @@ const getBookmarksTreeNode = async bookmarksPath => {
     }
   });
   return pathNode;
+};
+
+
+let _bookmarkIcons, _getBookmarkIconsPromise;
+
+
+const getBookmarkIcons = async () => {
+  if (!_getBookmarkIconsPromise) _getBookmarkIconsPromise = new Promise(resolve => {
+    log.debug('=== fetching bookmark icons from storage');
+    getStorage('bookmarkIcons', data => {
+      _bookmarkIcons = data.bookmarkIcons;
+      resolve(_bookmarkIcons);
+    });
+  });
+  return _getBookmarkIconsPromise;
+};
+
+
+const setBookmarkIcons = bookmarkIcons => {
+  _bookmarkIcons = bookmarkIcons;
+  setStorage({ bookmarkIcons });
+};
+
+
+const setBookmarkIcon = (origin, url) => {
+  setBookmarkIcons({ ..._bookmarkIcons, [origin]: url });
+};
+
+
+const loadImage = async url => new Promise(resolve => {
+  const image = new window.Image();
+  // image.crossOrigin = 'anonymous';
+  image.addEventListener('error', () => resolve());
+  image.addEventListener('load', () => resolve(image));
+  image.src = url;
+});
+
+
+// const imgToDataUrl = img => {
+//   const canvas = document.createElement('canvas');
+//   const ctx = canvas.getContext('2d');
+//   canvas.width = img.width;
+//   canvas.height = img.height;
+//   ctx.drawImage(img, 0, 0);
+//   return canvas.toDataURL();
+// };
+
+
+
+
+const useBookmarkIconUrl = pageUrl => {
+
+  const [iconUrl, setIconUrl] = useState('/assets/icons/globe-gray.svg');
+
+  const updateBookmarkIconUrl = async () => {
+    const { origin } = new URL(pageUrl);
+
+    const bookmarkIcons = await getBookmarkIcons();
+    if (bookmarkIcons[origin]) return setIconUrl(bookmarkIcons[origin]);
+
+    each(['/favicon.ico'/*, '/favicon.png', '/favicon-16x16.png' */], async path => {
+      const url = origin + path;
+
+      chrome.runtime.sendMessage(
+        { type: 'image-to-data-url', url },
+        response => {
+          log.debug('=== response:', response);
+        },
+      );
+
+      const img = await loadImage(url);
+      if (img) {
+        // const dataUrl = imgToDataUrl(img);
+        const dataUrl = url;
+        setBookmarkIcon(origin, dataUrl);
+        setIconUrl(dataUrl);
+        return false;
+      }
+    });
+  };
+
+  useEffect(() => {
+    updateBookmarkIconUrl();
+  }, [pageUrl]);
+  return iconUrl;
 };
 
 
@@ -81,7 +172,7 @@ const BookmarkGroups = () => {
   const [bookmarksTreeNode, setBookmarksTreeNode] = useState(false);
 
   useEffect(() => {
-    chrome.storage.sync.get('options', data => setOptions(options => ({ ...data.options, ...options })));
+    getStorage('options', data => setOptions(options => ({ ...data.options, ...options })));
   }, []);
 
   useEffect(async () => {
@@ -125,33 +216,6 @@ const App = () => {
       <BookmarkGroups />
     </div>
   );
-};
-
-
-const isValidImageUlr = async url => new Promise(resolve => {
-  const image = new window.Image();
-  image.addEventListener('load', () => resolve(true));
-  image.addEventListener('error', () => resolve(false));
-  image.src = url;
-});
-
-
-const useBookmarkIconUrl = pageUrl => {
-
-  const [iconUrl, setIconUrl] = useState('/assets/icons/globe-gray.svg');
-
-  const updateBookmarkIconUrl = async () => {
-    const { origin } = new URL(pageUrl);
-    each(['/favicon.ico', '/favicon.png', '/favicon-16x16.png'], async path => {
-      const url = origin + path;
-      if (await isValidImageUlr(url)) return setIconUrl(url);
-    });
-  };
-
-  useEffect(() => {
-    updateBookmarkIconUrl();
-  }, [pageUrl]);
-  return iconUrl;
 };
 
 
