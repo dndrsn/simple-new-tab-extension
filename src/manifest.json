@@ -15,6 +15,7 @@
     "storage"
   ],
   "host_permissions": [
+    "<all_urls>"
   ],
   "icons": {
     "16": "./assets/icons/bookmark-16.png",
@@ -23,7 +24,7 @@
     "72": "./assets/icons/bookmark-72.png"
   },
   "content_security_policy": {
-    "extension_pages": "default-src 'self'; connect-src http://* https://* data: blob: filesystem:;"
+    "extension_pages": "default-src 'self'; img-src http://* https://* data: blob: filesystem:; connect-src http://* https://* data: blob: filesystem:;"
   },
   "manifest_version": 3
 }

@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { debounce, each, find, map } from 'lodash-es';
+import { each, find, map } from 'lodash-es';
 import log from 'loglevel';
 
 
@@ -9,12 +9,6 @@ log.setDefaultLevel('debug');
 
 
 const { chrome } = window;
-
-
-const getStorage = (...args) => chrome.storage.sync.get(...args);
-
-
-const setStorage = debounce((...args) => chrome.storage.sync.set(...args), 250);
 
 
 const getBookmarksTree = async () => new Promise(resolve => chrome.bookmarks.getTree(resolve));
@@ -36,24 +30,18 @@ const getBookmarksTreeNode = async bookmarksPath => {
 };
 
 
-let _bookmarkIcons, _getBookmarkIconsPromise;
+let _bookmarkIcons;
 
 
-const getBookmarkIcons = async () => {
-  if (!_getBookmarkIconsPromise) _getBookmarkIconsPromise = new Promise(resolve => {
-    log.debug('=== fetching bookmark icons from storage');
-    getStorage('bookmarkIcons', data => {
-      _bookmarkIcons = data.bookmarkIcons;
-      resolve(_bookmarkIcons);
-    });
-  });
-  return _getBookmarkIconsPromise;
+const getBookmarkIcons = () => {
+  if (!_bookmarkIcons) _bookmarkIcons = JSON.parse(window.localStorage.getItem('bookmarkIcons') || '{}');
+  return _bookmarkIcons;
 };
 
 
 const setBookmarkIcons = bookmarkIcons => {
   _bookmarkIcons = bookmarkIcons;
-  setStorage({ bookmarkIcons });
+  window.localStorage.setItem('bookmarkIcons', JSON.stringify(bookmarkIcons));
 };
 
 
@@ -62,51 +50,46 @@ const setBookmarkIcon = (origin, url) => {
 };
 
 
-const loadImage = async url => new Promise(resolve => {
-  const image = new window.Image();
-  // image.crossOrigin = 'anonymous';
-  image.addEventListener('error', () => resolve());
-  image.addEventListener('load', () => resolve(image));
-  image.src = url;
-});
+const arrayBufferToBase64 = buffer => {
+  const bytes = [].slice.call(new Uint8Array(buffer));
+  let binary = '';
+  bytes.forEach((b) => binary += String.fromCharCode(b));
+  return window.btoa(binary);
+};
 
 
-// const imgToDataUrl = img => {
-//   const canvas = document.createElement('canvas');
-//   const ctx = canvas.getContext('2d');
-//   canvas.width = img.width;
-//   canvas.height = img.height;
-//   ctx.drawImage(img, 0, 0);
-//   return canvas.toDataURL();
-// };
-
-
+const fetchImageAsDataUrl = async url => {
+  try {
+    const response = await fetch(url);
+    if (response.status >= 400) return;
+    const contentType = response.headers.get('content-type');
+    if (!contentType?.startsWith('image')) return;
+    const arrayBuffer = await response.arrayBuffer();
+    const dataUrl = `data:${contentType};base64,${arrayBufferToBase64(arrayBuffer)}`;
+    return dataUrl;
+  }
+  catch (err) {
+    log.error('Unable to fetch image data URL:', url);
+    console.error(err); // eslint-disable-line no-console
+  }
+};
 
 
 const useBookmarkIconUrl = pageUrl => {
 
-  const [iconUrl, setIconUrl] = useState('/assets/icons/globe-gray.svg');
+  const { origin } = new URL(pageUrl);
 
-  const updateBookmarkIconUrl = async () => {
-    const { origin } = new URL(pageUrl);
+  const bookmarkIcons = getBookmarkIcons();
+  const cachedIcon = bookmarkIcons[origin];
+  const defaultIcon = '/assets/icons/globe-gray.svg';
 
-    const bookmarkIcons = await getBookmarkIcons();
-    if (bookmarkIcons[origin]) return setIconUrl(bookmarkIcons[origin]);
+  const [iconUrl, setIconUrl] = useState(cachedIcon || defaultIcon);
 
+  const updateIconUrl = async () => {
     each(['/favicon.ico'/*, '/favicon.png', '/favicon-16x16.png' */], async path => {
       const url = origin + path;
-
-      chrome.runtime.sendMessage(
-        { type: 'image-to-data-url', url },
-        response => {
-          log.debug('=== response:', response);
-        },
-      );
-
-      const img = await loadImage(url);
-      if (img) {
-        // const dataUrl = imgToDataUrl(img);
-        const dataUrl = url;
+      const dataUrl = await fetchImageAsDataUrl(url);
+      if (dataUrl) {
         setBookmarkIcon(origin, dataUrl);
         setIconUrl(dataUrl);
         return false;
@@ -115,24 +98,18 @@ const useBookmarkIconUrl = pageUrl => {
   };
 
   useEffect(() => {
-    updateBookmarkIconUrl();
-  }, [pageUrl]);
+    if (!cachedIcon) updateIconUrl();
+  }, []);
+
   return iconUrl;
 };
 
 
 const BookmarkIcon = ({ url }) => {
-
-  // const iconUrl = (
-  //   `https://t1.gstatic.com/faviconV2` +
-  //   `?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&size=128&url=${url}`
-  // );
-
   const iconUrl = useBookmarkIconUrl(url);
-
   return (
     <span className="mr-2 d-block">
-      <img className="bookmark__icon d-block" alt="favicon" src={iconUrl} />
+      <img className="bookmark__icon d-block" alt="" src={iconUrl} />
     </span>
   );
 };
@@ -172,7 +149,7 @@ const BookmarkGroups = () => {
   const [bookmarksTreeNode, setBookmarksTreeNode] = useState(false);
 
   useEffect(() => {
-    getStorage('options', data => setOptions(options => ({ ...data.options, ...options })));
+    chrome.storage.sync.get('options', data => setOptions(options => ({ ...data.options, ...options })));
   }, []);
 
   useEffect(async () => {
