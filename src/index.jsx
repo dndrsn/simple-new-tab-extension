@@ -1,8 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { each, find, map } from 'lodash-es';
+import { each, find, map, orderBy } from 'lodash-es';
 import log from 'loglevel';
+import urlJoin from 'url-join';
 
 
 log.setDefaultLevel('debug');
@@ -57,6 +58,7 @@ const arrayBufferToBase64 = buffer => {
 
 
 const fetchImageAsDataUrl = async url => {
+  if (!url) return;
   try {
     const response = await fetch(url);
     if (response.status >= 400) return;
@@ -67,7 +69,49 @@ const fetchImageAsDataUrl = async url => {
     return dataUrl;
   }
   catch (err) {
-    log.error('Unable to fetch image data URL:', url);
+    log.error('Error fetching image data URL:', url);
+    console.error(err); // eslint-disable-line no-console
+  }
+};
+
+
+const fetchPageFaviconUrl = async pageUrl => {
+  if (!pageUrl) return;
+  try {
+    const response = await fetch(pageUrl);
+    const redirectUrl = response.redirected && response.url;
+    // if (redirectUrl) log.debug(`=== this is a redirect:\n${pageUrl}\n${redirectUrl}`);
+    if (response.status >= 400) return;
+    const body = await response.text();
+    const faviconLinkElemMatches = body.match(/<link [^>]*?rel="icon"[^>]*?\/?>/ig);
+    if (faviconLinkElemMatches) {
+      const faviconLinks = orderBy(
+        map(faviconLinkElemMatches, fle => ({
+          url: fle.match(/href="(.+?)"/i)?.[1],
+          sizes: fle.match(/sizes="(.+?)"/i)?.[1],
+        })),
+        ({ sizes }) => {
+          const sizeMatch = sizes?.match(/^(\d+)x(\d+)/);
+          if (sizeMatch) return Math.abs(63 - Number(sizeMatch[1]));
+          return 99999;
+        },
+        'asc',
+      );
+      const iconPageUrl = redirectUrl || pageUrl;
+      let url = faviconLinks[0].url;
+      if (url.startsWith('/')) {
+        const { origin } = new URL(iconPageUrl);
+        url = urlJoin(origin, url);
+      }
+      else if (!url.match(/^[\w.+_-]+:/i)) {
+        const { origin, pathname } = new URL(iconPageUrl);
+        url = urlJoin(origin, pathname.replace(/\/[^/]*$/, ''), url);
+      }
+      return url;
+    }
+  }
+  catch (err) {
+    log.error('Error fetching favicon for url:', pageUrl);
     console.error(err); // eslint-disable-line no-console
   }
 };
@@ -84,19 +128,21 @@ const useBookmarkIconUrl = pageUrl => {
   const [iconUrl, setIconUrl] = useState(cachedIcon || defaultIcon);
 
   const updateIconUrl = async () => {
-    each(['/favicon.ico'/*, '/favicon.png', '/favicon-16x16.png' */], async path => {
-      const url = origin + path;
-      const dataUrl = await fetchImageAsDataUrl(url);
-      if (dataUrl) {
-        setBookmarkIcon(origin, dataUrl);
-        setIconUrl(dataUrl);
-        return false;
-      }
-    });
+    const dataUrl = (
+      await fetchImageAsDataUrl(await fetchPageFaviconUrl(origin)) ||
+      await fetchImageAsDataUrl(urlJoin(origin, '/favicon.ico')) ||
+      await fetchImageAsDataUrl(urlJoin(origin.replace(/\/\/[^.]+\./, '//'), '/favicon.ico'))
+    );
+    // if (!dataUrl) return;
+    setBookmarkIcon(origin, dataUrl || defaultIcon);
+    setIconUrl(dataUrl || defaultIcon);
   };
 
   useEffect(() => {
-    if (!cachedIcon) updateIconUrl();
+    if (!cachedIcon) {
+      log.debug('=== updating icon for:', origin);
+      updateIconUrl();
+    }
   }, []);
 
   return iconUrl;
