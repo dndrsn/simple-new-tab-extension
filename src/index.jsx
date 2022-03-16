@@ -9,6 +9,7 @@ log.setDefaultLevel('debug');
 
 
 const { chrome } = window;
+const _state = {};
 
 
 const getBookmarksTree = async () => new Promise(resolve => chrome.bookmarks.getTree(resolve));
@@ -30,23 +31,20 @@ const getBookmarksTreeNode = async bookmarksPath => {
 };
 
 
-let _bookmarkIcons;
-
-
 const getBookmarkIcons = () => {
-  if (!_bookmarkIcons) _bookmarkIcons = JSON.parse(window.localStorage.getItem('bookmarkIcons') || '{}');
-  return _bookmarkIcons;
+  if (!_state.bookmarkIcons) _state.bookmarkIcons = JSON.parse(window.localStorage.getItem('bookmarkIcons') || '{}');
+  return _state.bookmarkIcons;
 };
 
 
 const setBookmarkIcons = bookmarkIcons => {
-  _bookmarkIcons = bookmarkIcons;
+  _state.bookmarkIcons = bookmarkIcons;
   window.localStorage.setItem('bookmarkIcons', JSON.stringify(bookmarkIcons));
 };
 
 
 const setBookmarkIcon = (origin, url) => {
-  setBookmarkIcons({ ..._bookmarkIcons, [origin]: url });
+  setBookmarkIcons({ ..._state.bookmarkIcons, [origin]: url });
 };
 
 
