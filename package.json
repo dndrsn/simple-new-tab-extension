@@ -6,7 +6,8 @@
     "lint": "node ./scripts/lint",
     "clean": "node ./scripts/clean",
     "build": "node ./scripts/build",
-    "script": "node ./scripts/_run-script"
+    "script": "node ./scripts/_run-script",
+    "start": "node ./scripts/build --watch"
   },
   "lint-staged": {
     "*.{js,jsx}": "eslint --max-warnings=0",
