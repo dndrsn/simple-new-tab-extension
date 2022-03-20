@@ -131,9 +131,10 @@ const useBookmarkIconUrl = pageUrl => {
     const dataUrl = (
       await fetchImageAsDataUrl(await fetchPageFaviconUrl(origin)) ||
       await fetchImageAsDataUrl(urlJoin(origin, '/favicon.ico')) ||
-      await fetchImageAsDataUrl(urlJoin(origin.replace(/\/\/[^.]+\./, '//'), '/favicon.ico'))
+      await fetchImageAsDataUrl(urlJoin(origin.replace(/\/\/[^.]+\./, '//'), '/favicon.ico')) ||
+      await fetchImageAsDataUrl(urlJoin(origin.replace(/\/\/[^.]+\./, '//www.'), '/favicon.ico'))
     );
-    // if (!dataUrl) return;
+    if (!dataUrl) return;
     setBookmarkIcon(origin, dataUrl || defaultIcon);
     setIconUrl(dataUrl || defaultIcon);
   };
