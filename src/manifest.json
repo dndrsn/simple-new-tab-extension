@@ -7,6 +7,15 @@
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+       "matches": ["<all_urls>"],
+       "js": ["content-script.js"]
+    }
+  ],
   "permissions": [
     "bookmarks",
     "storage"

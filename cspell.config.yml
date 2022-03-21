@@ -1,0 +1,12 @@
+
+import: '@vshift/common/configs/cspell-config'
+
+words:
+  - elem
+
+# when using "import" ignore paths are relative to the imported file
+# so ignorePaths in the imported config don't work
+# probably better to keep this local anyway
+ignorePaths:
+  - package.json
+
