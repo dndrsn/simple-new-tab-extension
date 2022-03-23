@@ -1,5 +1,5 @@
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { each, find, map, orderBy } from 'lodash-es';
 import log from 'loglevel';
 import urlJoin from 'url-join';
@@ -91,29 +91,31 @@ const getBookmarkIcons = () => {
 };
 
 
+export const getBookmarkIcon = pageUrl => {
+  const { origin } = new URL(pageUrl);
+  return getBookmarkIcons()[origin];
+};
+
+
 const setBookmarkIcons = bookmarkIcons => {
   _bookmarkIcons = bookmarkIcons;
   window.localStorage.setItem('bookmarkIcons', JSON.stringify(bookmarkIcons));
 };
 
 
-const setBookmarkIcon = (origin, url) => {
-  setBookmarkIcons({ ..._bookmarkIcons, [origin]: url });
+export const setBookmarkIcon = (pageUrl, iconUrl) => {
+  const { origin } = new URL(pageUrl);
+  setBookmarkIcons({
+    ..._bookmarkIcons,
+    [origin]: iconUrl,
+  });
 };
 
 
-const arrayBufferToBase64 = buffer => {
-  const bytes = [].slice.call(new Uint8Array(buffer));
-  let binary = '';
-  bytes.forEach((b) => binary += String.fromCharCode(b));
-  return window.btoa(binary);
-};
-
-
-const fetchImageAsDataUrl = async url => {
-  if (!url) return;
+const fetchImageAsDataUrl = async imageUrl => {
+  if (!imageUrl) return;
   try {
-    const response = await fetch(url);
+    const response = await fetch(imageUrl);
     if (response.status >= 400) return;
     const contentType = response.headers.get('content-type');
     if (!contentType?.startsWith('image')) return;
@@ -122,14 +124,16 @@ const fetchImageAsDataUrl = async url => {
     return dataUrl;
   }
   catch (err) {
-    log.error('Error fetching image data URL:', url);
+    log.error('Error fetching image as data URL:', imageUrl);
     console.error(err); // eslint-disable-line no-console
   }
 };
 
 
-const fetchPageFaviconUrl = async pageUrl => {
+const fetchFaviconUrl = async pageUrl => {
+
   if (!pageUrl) return;
+
   try {
     const response = await fetch(pageUrl);
     const redirectUrl = response.redirected && response.url;
@@ -170,35 +174,49 @@ const fetchPageFaviconUrl = async pageUrl => {
 };
 
 
-export const useBookmarkIconUrl = pageUrl => {
+export const getBookmarkIconDataUrl = async pageUrl => {
 
-  const { origin } = new URL(pageUrl);
+  const { origin, hostname } = new URL(pageUrl);
 
   const bookmarkIcons = getBookmarkIcons();
-  const cachedIcon = bookmarkIcons[origin];
-  const defaultIcon = '/assets/icons/globe-gray.svg';
+  const cachedIconUrl = bookmarkIcons[origin];
 
-  const [iconUrl, setIconUrl] = useState(cachedIcon || defaultIcon);
+  if (cachedIconUrl) return cachedIconUrl;
 
-  const updateIconUrl = async () => {
-    const dataUrl = (
-      await fetchImageAsDataUrl(await fetchPageFaviconUrl(origin)) ||
-      await fetchImageAsDataUrl(urlJoin(origin, '/favicon.ico')) ||
-      await fetchImageAsDataUrl(urlJoin(origin.replace(/\/\/[^.]+\./, '//'), '/favicon.ico')) ||
-      await fetchImageAsDataUrl(urlJoin(origin.replace(/\/\/[^.]+\./, '//www.'), '/favicon.ico'))
-    );
-    // if (!dataUrl) return;
-    setBookmarkIcon(origin, dataUrl || defaultIcon);
-    setIconUrl(dataUrl || defaultIcon);
-  };
+  const getRootDomain = domain => domain.split('.').slice(-2).join('.');
 
-  useEffect(() => {
-    if (!cachedIcon) {
-      log.debug('=== updating icon for:', origin);
-      updateIconUrl();
-    }
-  }, []);
+  const iconUrl = (
+    await fetchImageAsDataUrl(await fetchFaviconUrl(origin)) ||
+    await fetchImageAsDataUrl(urlJoin(origin, '/favicon.ico')) ||
+    await fetchImageAsDataUrl(urlJoin(origin.replace(hostname, 'www.' + getRootDomain(hostname)), '/favicon.ico')) ||
+    await fetchImageAsDataUrl(urlJoin(origin.replace(hostname, getRootDomain(hostname)), '/favicon.ico'))
+  );
 
   return iconUrl;
 };
+
+
+
+// ----- MISC -----
+
+export const useIsMounted = () => {
+  const isMounted = useRef(false);
+  useEffect(() => {
+    isMounted.current = true;
+    return () => isMounted.current = false;
+  }, []);
+  return isMounted;
+};
+
+
+
+// ----- UTILS ----
+
+const arrayBufferToBase64 = buffer => {
+  const bytes = [].slice.call(new Uint8Array(buffer));
+  let binary = '';
+  bytes.forEach((b) => binary += String.fromCharCode(b));
+  return window.btoa(binary);
+};
+
 

@@ -4,15 +4,15 @@ import ReactDOM from 'react-dom';
 import { map } from 'lodash-es';
 
 import {
+  getBookmarkIcon,
   useBookmarkGroups,
-  useBookmarkIconUrl,
   useOptions,
   // log,
 } from './common.js';
 
 
 const BookmarkIcon = ({ url }) => {
-  const iconUrl = useBookmarkIconUrl(url);
+  const iconUrl = getBookmarkIcon(url) || '/assets/icons/globe-gray.svg';
   return (
     <span className="mr-2 d-block">
       <img className="bookmark__icon d-block" alt="" src={iconUrl} />
