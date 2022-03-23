@@ -1,33 +1,32 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
-// import { each, find, map } from 'lodash-es';
 
-// import { log } from './_common';
-
-
-const { chrome } = window;
+import {
+  useOptions,
+  // log,
+} from './common';
 
 
 const App = () => {
-
-  const [options, setOptions] = useState({});
-
-  const setOption = (key, val) => setOptions(options => ({ ...options, [key]: val }));
-
-  const handleBookmarksInputChange = e => setOption('bookmarksPath', e.target.value);
-
-  useEffect(() => {
-    chrome.storage.sync.get('options', data => setOptions(options => ({ ...data.options, ...options })));
-  }, []);
-
-  useEffect(() => {
-    chrome.storage.sync.set({ options });
-  }, [options]);
-
   return (
     <div className="container mt-5">
       <h1>Simple New Tab Page</h1>
+      <Options />
+      <Utilities />
+    </div>
+  );
+};
+
+
+const Options = () => {
+
+  const { options, setOption } = useOptions();
+
+  const handleBookmarksInputChange = e => setOption('bookmarksPath', e.target.value);
+
+  return (
+    <div className="options mt-5">
       <h2>Options</h2>
       <form>
         <div className="form-group">
@@ -37,7 +36,7 @@ const App = () => {
             className="form-control"
             type="text"
             aria-describedby="bookmarksPathHelp"
-            value={options.bookmarksPath || ''}
+            value={options?.bookmarksPath || ''}
             onChange={handleBookmarksInputChange}
           />
           <small id="bookmarksPathHelp" className="form-text text-muted">
@@ -45,6 +44,17 @@ const App = () => {
           </small>
         </div>
       </form>
+    </div>
+  );
+};
+
+
+const Utilities = () => {
+
+  return (
+    <div className="utilities mt-5">
+      <h2>Utilities</h2>
+      <p>put utilities here</p>
     </div>
   );
 };

@@ -1,50 +1,14 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
 import { map } from 'lodash-es';
-import urlJoin from 'url-join';
 
 import {
-  fetchImageAsDataUrl,
-  fetchPageFaviconUrl,
-  getBookmarkIcons,
-  getBookmarksTreeNode,
-  log,
-  setBookmarkIcon,
+  useBookmarkGroups,
+  useBookmarkIconUrl,
+  useOptions,
+  // log,
 } from './common.js';
-
-
-const useBookmarkIconUrl = pageUrl => {
-
-  const { origin } = new URL(pageUrl);
-
-  const bookmarkIcons = getBookmarkIcons();
-  const cachedIcon = bookmarkIcons[origin];
-  const defaultIcon = '/assets/icons/globe-gray.svg';
-
-  const [iconUrl, setIconUrl] = useState(cachedIcon || defaultIcon);
-
-  const updateIconUrl = async () => {
-    const dataUrl = (
-      await fetchImageAsDataUrl(await fetchPageFaviconUrl(origin)) ||
-      await fetchImageAsDataUrl(urlJoin(origin, '/favicon.ico')) ||
-      await fetchImageAsDataUrl(urlJoin(origin.replace(/\/\/[^.]+\./, '//'), '/favicon.ico')) ||
-      await fetchImageAsDataUrl(urlJoin(origin.replace(/\/\/[^.]+\./, '//www.'), '/favicon.ico'))
-    );
-    if (!dataUrl) return;
-    setBookmarkIcon(origin, dataUrl || defaultIcon);
-    setIconUrl(dataUrl || defaultIcon);
-  };
-
-  useEffect(() => {
-    if (!cachedIcon) {
-      log.debug('=== updating icon for:', origin);
-      updateIconUrl();
-    }
-  }, []);
-
-  return iconUrl;
-};
 
 
 const BookmarkIcon = ({ url }) => {
@@ -69,15 +33,15 @@ const Bookmark = ({ title, url }) => {
 };
 
 
-const BookmarkGroup = ({ title, children }) => {
+const BookmarkGroup = ({ title, bookmarks }) => {
   return (
     <div className="bookmark-group mb-4">
       <div className="list-group">
         <div className="bookmark-group__title list-group-item px-3 py-2">
           <h2 className="h5 mb-0">{title}</h2>
         </div>
-        {map(children, (child, i) => (
-          <Bookmark key={child.url + '_' + i} {...child} />
+        {map(bookmarks, (bookmark, i) => (
+          <Bookmark key={bookmark.url + '_' + i} {...bookmark} />
         ))}
       </div>
     </div>
@@ -87,16 +51,8 @@ const BookmarkGroup = ({ title, children }) => {
 
 const BookmarkGroups = () => {
 
-  const [options, setOptions] = useState();
-  const [bookmarksTreeNode, setBookmarksTreeNode] = useState(false);
-
-  useEffect(() => {
-    chrome.storage.sync.get('options', data => setOptions(options => ({ ...data.options, ...options })));
-  }, []);
-
-  useEffect(async () => {
-    if (options?.bookmarksPath) setBookmarksTreeNode(await getBookmarksTreeNode(options.bookmarksPath));
-  }, [options]);
+  const { options } = useOptions();
+  const bookmarkGroups = useBookmarkGroups(options?.bookmarksPath);
 
   if (!options) return null;
 
@@ -107,20 +63,20 @@ const BookmarkGroups = () => {
     </div>
   );
 
-  if (bookmarksTreeNode === false) return null;
-
-  if (!bookmarksTreeNode) return (
+  if (bookmarkGroups === false) return (
     <div className="alert alert-warning" role="alert">
       Bookmarks folder not found: &quot;{options.bookmarksPath}&quot;.
       Update the <a href="/options.html">extension options</a> to set the path of boomarks folder to display.
     </div>
   );
 
+  if (!bookmarkGroups) return null;
+
   return (
     <div className="row">
-      {map(bookmarksTreeNode.children, childNode => (
-        <div key={childNode.title} className="col-sm-6 col-md-4 col-lg-3">
-          <BookmarkGroup {...childNode} />
+      {map(bookmarkGroups, ({ title, bookmarks }) => (
+        <div key={title} className="col-sm-6 col-md-4 col-lg-3">
+          <BookmarkGroup {...{ title, bookmarks }} />
         </div>
       ))}
     </div>

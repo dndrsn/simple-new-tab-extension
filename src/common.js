@@ -1,4 +1,5 @@
 
+import { useEffect, useMemo, useState } from 'react';
 import { each, find, map, orderBy } from 'lodash-es';
 import log from 'loglevel';
 import urlJoin from 'url-join';
@@ -8,14 +9,44 @@ log.setDefaultLevel('debug');
 export { log };
 
 
-const _state = {};
+
+// ----- OPTIONS -----
+
+const getSyncedOptions = async () => {
+  const { options } = await chrome.storage.sync.get('options');
+  return options;
+};
 
 
-const getBookmarksTree = async () => new Promise(resolve => chrome.bookmarks.getTree(resolve));
+const setSyncedOptions = async options => chrome.storage.sync.set({ options });
 
 
-export const getBookmarksTreeNode = async bookmarksPath => {
-  const bookmarksTree = await getBookmarksTree();
+export const useOptions = () => {
+
+  const [options, setOptions] = useState();
+
+  const setOption = (key, val) => setOptions(options => ({ ...options, [key]: val }));
+
+  useEffect(async () => {
+    const syncedOptions = await getSyncedOptions();
+    setOptions(options => ({ ...syncedOptions, ...options }));
+  }, []);
+
+  useEffect(() => {
+    if (!options) return;
+    setSyncedOptions(options);
+  }, [options]);
+
+  return useMemo(() => ({ options, setOptions, setOption }), [options]);
+};
+
+
+
+// ----- BOOKMARKS -----
+
+const getBookmarkGroups = async bookmarksPath => {
+
+  const bookmarksTree = await chrome.bookmarks.getTree();
 
   const pathElems = bookmarksPath.split('/');
   let pathNode = bookmarksTree[0];
@@ -26,24 +57,48 @@ export const getBookmarksTreeNode = async bookmarksPath => {
       return false;
     }
   });
-  return pathNode;
+
+  const bookmarkGroups = map(pathNode.children, group => ({
+    title: group.title,
+    bookmarks: map(group.children, bookmark => ({
+      title: bookmark.title,
+      url: bookmark.url,
+    })),
+  }));
+
+  return bookmarkGroups;
 };
 
 
-export const getBookmarkIcons = () => {
-  if (!_state.bookmarkIcons) _state.bookmarkIcons = JSON.parse(window.localStorage.getItem('bookmarkIcons') || '{}');
-  return _state.bookmarkIcons;
+export const useBookmarkGroups = bookmarksPath => {
+
+  const [bookmarkGroups, setBookmarkGroups] = useState();
+
+  useEffect(async () => {
+    if (bookmarksPath) setBookmarkGroups(await getBookmarkGroups(bookmarksPath));
+  }, [bookmarksPath]);
+
+  return bookmarkGroups;
+};
+
+
+let _bookmarkIcons;
+
+
+const getBookmarkIcons = () => {
+  if (!_bookmarkIcons) _bookmarkIcons = JSON.parse(window.localStorage.getItem('bookmarkIcons') || '{}');
+  return _bookmarkIcons;
 };
 
 
 const setBookmarkIcons = bookmarkIcons => {
-  _state.bookmarkIcons = bookmarkIcons;
+  _bookmarkIcons = bookmarkIcons;
   window.localStorage.setItem('bookmarkIcons', JSON.stringify(bookmarkIcons));
 };
 
 
-export const setBookmarkIcon = (origin, url) => {
-  setBookmarkIcons({ ..._state.bookmarkIcons, [origin]: url });
+const setBookmarkIcon = (origin, url) => {
+  setBookmarkIcons({ ..._bookmarkIcons, [origin]: url });
 };
 
 
@@ -55,7 +110,7 @@ const arrayBufferToBase64 = buffer => {
 };
 
 
-export const fetchImageAsDataUrl = async url => {
+const fetchImageAsDataUrl = async url => {
   if (!url) return;
   try {
     const response = await fetch(url);
@@ -73,7 +128,7 @@ export const fetchImageAsDataUrl = async url => {
 };
 
 
-export const fetchPageFaviconUrl = async pageUrl => {
+const fetchPageFaviconUrl = async pageUrl => {
   if (!pageUrl) return;
   try {
     const response = await fetch(pageUrl);
@@ -112,5 +167,38 @@ export const fetchPageFaviconUrl = async pageUrl => {
     log.error('Error fetching favicon for url:', pageUrl);
     console.error(err); // eslint-disable-line no-console
   }
+};
+
+
+export const useBookmarkIconUrl = pageUrl => {
+
+  const { origin } = new URL(pageUrl);
+
+  const bookmarkIcons = getBookmarkIcons();
+  const cachedIcon = bookmarkIcons[origin];
+  const defaultIcon = '/assets/icons/globe-gray.svg';
+
+  const [iconUrl, setIconUrl] = useState(cachedIcon || defaultIcon);
+
+  const updateIconUrl = async () => {
+    const dataUrl = (
+      await fetchImageAsDataUrl(await fetchPageFaviconUrl(origin)) ||
+      await fetchImageAsDataUrl(urlJoin(origin, '/favicon.ico')) ||
+      await fetchImageAsDataUrl(urlJoin(origin.replace(/\/\/[^.]+\./, '//'), '/favicon.ico')) ||
+      await fetchImageAsDataUrl(urlJoin(origin.replace(/\/\/[^.]+\./, '//www.'), '/favicon.ico'))
+    );
+    // if (!dataUrl) return;
+    setBookmarkIcon(origin, dataUrl || defaultIcon);
+    setIconUrl(dataUrl || defaultIcon);
+  };
+
+  useEffect(() => {
+    if (!cachedIcon) {
+      log.debug('=== updating icon for:', origin);
+      updateIconUrl();
+    }
+  }, []);
+
+  return iconUrl;
 };
 
