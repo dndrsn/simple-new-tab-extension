@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import { each } from 'lodash-es';
 
 import {
-  getBookmarkIconDataUrl,
+  fetchBookmarkIconDataUrl,
   setBookmarkIcon,
   useBookmarkGroups,
   useIsMounted,
@@ -64,7 +64,7 @@ const Utilities = ({ options }) => {
   const isMounted = useIsMounted();
 
   const updateBookmarkIcon = async bookmarkUrl => {
-    const bookmarkIconDataUrl = await getBookmarkIconDataUrl(bookmarkUrl);
+    const bookmarkIconDataUrl = await fetchBookmarkIconDataUrl(bookmarkUrl);
     if (bookmarkIconDataUrl) {
       setBookmarkIcon(bookmarkUrl, bookmarkIconDataUrl);
     }

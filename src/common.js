@@ -82,6 +82,9 @@ export const useBookmarkGroups = bookmarksPath => {
 };
 
 
+
+// ----- BOOKMARK ICONS -----
+
 let _bookmarkIcons;
 
 
@@ -112,23 +115,25 @@ export const setBookmarkIcon = (pageUrl, iconUrl) => {
 };
 
 
-const fetchImageAsDataUrl = async imageUrl => {
-  if (!imageUrl) return;
-  try {
-    const response = await fetch(imageUrl);
-    if (response.status >= 400) return;
-    const contentType = response.headers.get('content-type');
-    if (!contentType?.startsWith('image')) return;
-    const arrayBuffer = await response.arrayBuffer();
-    const dataUrl = `data:${contentType};base64,${arrayBufferToBase64(arrayBuffer)}`;
-    return dataUrl;
-  }
-  catch (err) {
-    log.error('Error fetching image as data URL:', imageUrl);
-    console.error(err); // eslint-disable-line no-console
-  }
+export const fetchBookmarkIconDataUrl = async pageUrl => {
+
+  const { origin, hostname } = new URL(pageUrl);
+
+  const getRootDomain = domain => domain.split('.').slice(-2).join('.');
+
+  const iconUrl = (
+    await fetchImageAsDataUrl(await fetchFaviconUrl(origin)) ||
+    await fetchImageAsDataUrl(urlJoin(origin, '/favicon.ico')) ||
+    await fetchImageAsDataUrl(urlJoin(origin.replace(hostname, 'www.' + getRootDomain(hostname)), '/favicon.ico')) ||
+    await fetchImageAsDataUrl(urlJoin(origin.replace(hostname, getRootDomain(hostname)), '/favicon.ico'))
+  );
+
+  return iconUrl;
 };
 
+
+
+// ----- FAVICON + IMAGE UTILS ----
 
 const fetchFaviconUrl = async pageUrl => {
 
@@ -174,25 +179,31 @@ const fetchFaviconUrl = async pageUrl => {
 };
 
 
-export const getBookmarkIconDataUrl = async pageUrl => {
+const fetchImageAsDataUrl = async imageUrl => {
+  if (!imageUrl) return;
+  try {
+    const response = await fetch(imageUrl);
+    if (response.status >= 400) return;
+    const contentType = response.headers.get('content-type');
+    if (!contentType?.startsWith('image')) return;
+    const arrayBuffer = await response.arrayBuffer();
+    const base64Data = arrayBufferToBase64(arrayBuffer);
+    if (!base64Data) return;
+    const dataUrl = `data:${contentType};base64,${base64Data}`;
+    return dataUrl;
+  }
+  catch (err) {
+    log.error('Error fetching image as data URL:', imageUrl);
+    console.error(err); // eslint-disable-line no-console
+  }
+};
 
-  const { origin, hostname } = new URL(pageUrl);
 
-  const bookmarkIcons = getBookmarkIcons();
-  const cachedIconUrl = bookmarkIcons[origin];
-
-  if (cachedIconUrl) return cachedIconUrl;
-
-  const getRootDomain = domain => domain.split('.').slice(-2).join('.');
-
-  const iconUrl = (
-    await fetchImageAsDataUrl(await fetchFaviconUrl(origin)) ||
-    await fetchImageAsDataUrl(urlJoin(origin, '/favicon.ico')) ||
-    await fetchImageAsDataUrl(urlJoin(origin.replace(hostname, 'www.' + getRootDomain(hostname)), '/favicon.ico')) ||
-    await fetchImageAsDataUrl(urlJoin(origin.replace(hostname, getRootDomain(hostname)), '/favicon.ico'))
-  );
-
-  return iconUrl;
+const arrayBufferToBase64 = buffer => {
+  const bytes = [].slice.call(new Uint8Array(buffer));
+  let binary = '';
+  bytes.forEach((b) => binary += String.fromCharCode(b));
+  return window.btoa(binary);
 };
 
 
@@ -208,15 +219,5 @@ export const useIsMounted = () => {
   return isMounted;
 };
 
-
-
-// ----- UTILS ----
-
-const arrayBufferToBase64 = buffer => {
-  const bytes = [].slice.call(new Uint8Array(buffer));
-  let binary = '';
-  bytes.forEach((b) => binary += String.fromCharCode(b));
-  return window.btoa(binary);
-};
 
 
