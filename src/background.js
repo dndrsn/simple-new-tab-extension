@@ -4,8 +4,8 @@ import { each, includes } from 'lodash-es';
 import {
   fetchImageAsDataUrl,
   getBookmarkGroups,
-  setBookmarkIcon,
-  log,
+  setStoredBookmarkIcon,
+  // log,
 } from './common';
 
 
@@ -24,16 +24,9 @@ const handleFaviconUpdate = async ({ url, favIconUrl }) => {
   }));
 
   const urlOrigin = new URL(url).origin;
-  if (!includes(bookmarkOrigins, urlOrigin)) {
-    log.debug('=== not an origin match:', urlOrigin);
-    return;
-  }
+  if (!includes(bookmarkOrigins, urlOrigin)) return;
 
   const faviconDataUrl = await fetchImageAsDataUrl(favIconUrl);
-  log.debug('=== tab url:', url);
-  log.debug('=== favIconUrl:', favIconUrl);
-  log.debug('=== faviconDataUrl:', faviconDataUrl);
-  setBookmarkIcon(urlOrigin, faviconDataUrl);
+  setStoredBookmarkIcon(urlOrigin, faviconDataUrl);
 };
-
 

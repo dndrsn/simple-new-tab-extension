@@ -13,13 +13,13 @@ export { log };
 
 // ----- OPTIONS -----
 
-export const getSyncedOptions = async () => {
+const getStoredOptions = async () => {
   const { options } = await chrome.storage.sync.get('options');
   return options;
 };
 
 
-const setSyncedOptions = async options => chrome.storage.sync.set({ options });
+const setStoredOptions = async options => chrome.storage.sync.set({ options });
 
 
 export const useOptions = () => {
@@ -29,13 +29,13 @@ export const useOptions = () => {
   const setOption = (key, val) => setOptions(options => ({ ...options, [key]: val }));
 
   useEffect(async () => {
-    const syncedOptions = await getSyncedOptions();
+    const syncedOptions = await getStoredOptions();
     setOptions(options => ({ ...syncedOptions, ...options }));
   }, []);
 
   useEffect(() => {
     if (!options) return;
-    setSyncedOptions(options);
+    setStoredOptions(options);
   }, [options]);
 
   return useMemo(() => ({ options, setOptions, setOption }), [options]);
@@ -48,7 +48,7 @@ export const useOptions = () => {
 export const getBookmarkGroups = async bookmarksPath => {
 
   if (!bookmarksPath) {
-    const options = await getSyncedOptions();
+    const options = await getStoredOptions();
     bookmarksPath = options.bookmarksPath;
   }
 
@@ -91,37 +91,57 @@ export const useBookmarkGroups = bookmarksPath => {
 
 // ----- BOOKMARK ICONS -----
 
-export let _bookmarkIcons = false;
-
-
-const getBookmarkIcons = async () => {
-  if (!_bookmarkIcons) {
-    const data = await chrome.storage.local.get('bookmarkIcons');
-    _bookmarkIcons = data.bookmarkIcons;
-  }
-  return _bookmarkIcons;
+const getStoredBookmarkIcons = async () => {
+  const data = await chrome.storage.local.get('bookmarkIcons');
+  return data.bookmarkIcons;
 };
 
 
-export const getBookmarkIcon = async pageUrl => {
-  const { origin } = new URL(pageUrl);
-
-  return (await getBookmarkIcons())[origin];
-};
-
-
-const setBookmarkIcons = async bookmarkIcons => {
-  _bookmarkIcons = bookmarkIcons;
+const setStoredBookmarkIcons = async bookmarkIcons => {
   await chrome.storage.local.set({ bookmarkIcons });
 };
 
 
-export const setBookmarkIcon = async (pageUrl, iconUrl) => {
+export const setStoredBookmarkIcon = async (pageUrl, iconUrl) => {
   const { origin } = new URL(pageUrl);
-  setBookmarkIcons({
-    ...(await getBookmarkIcons()),
+  setStoredBookmarkIcons({
+    ...(await getStoredBookmarkIcons()),
     [origin]: iconUrl,
   });
+};
+
+
+export const useBookmarkIcons = () => {
+
+  const [bookmarkIcons, setBookmarkIcons] = useState();
+
+  const getBookmarkIcon = pageUrl => {
+    const { origin } = new URL(pageUrl);
+    return bookmarkIcons?.[origin];
+  };
+
+  const setBookmarkIcon = (pageUrl, iconUrl) => {
+    const { origin } = new URL(pageUrl);
+    setBookmarkIcons(bookmarkIcons => ({
+      ...bookmarkIcons,
+      [origin]: iconUrl,
+    }));
+  };
+
+  useEffect(async () => {
+    const storedBookmarkIcons = await getStoredBookmarkIcons();
+    setBookmarkIcons(storedBookmarkIcons);
+  }, []);
+
+  useEffect(() => {
+    setStoredBookmarkIcons(bookmarkIcons);
+  }, [bookmarkIcons]);
+
+  return useMemo(() => ({
+    bookmarkIcons,
+    getBookmarkIcon,
+    setBookmarkIcon,
+  }), [bookmarkIcons]);
 };
 
 

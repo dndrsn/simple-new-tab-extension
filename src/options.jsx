@@ -5,7 +5,7 @@ import { each } from 'lodash-es';
 
 import {
   fetchBookmarkIconDataUrl,
-  setBookmarkIcon,
+  useBookmarkIcons,
   useBookmarkGroups,
   useIsMounted,
   useOptions,
@@ -59,6 +59,7 @@ const Utilities = ({ options }) => {
 
   const [updatingIcons, setUpdatingIcons] = useState(false);
   const bookmarkGroups = useBookmarkGroups(options?.bookmarksPath);
+  const { setBookmarkIcon } = useBookmarkIcons();
   const updateIconsDisabled = !bookmarkGroups || updatingIcons;
 
   const isMounted = useIsMounted();

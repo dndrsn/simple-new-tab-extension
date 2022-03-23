@@ -1,40 +1,33 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import ReactDOM from 'react-dom';
-import { map } from 'lodash-es';
+import { each, map } from 'lodash-es';
 
 import {
-  getBookmarkIcon,
+  useBookmarkIcons,
   useBookmarkGroups,
   useOptions,
   // log,
 } from './common.js';
 
 
-const BookmarkIcon = ({ url }) => {
+const BookmarkIcon = ({ icon }) => {
 
   const defaultIcon = '/assets/icons/globe-gray.svg';
 
-  const [iconUrl, setIconUrl] = useState(defaultIcon);
-
-  useEffect(async () => {
-    setIconUrl(await getBookmarkIcon(url) || defaultIcon);
-  }, []);
-
-
   return (
     <span className="mr-2 d-block">
-      <img className="bookmark__icon d-block" alt="" src={iconUrl} />
+      <img className="bookmark__icon d-block" alt="" src={icon || defaultIcon} />
     </span>
   );
 };
 
 
-const Bookmark = ({ title, url }) => {
+const Bookmark = ({ title, url, icon }) => {
   return (
     <a className="bookmark list-group-item list-group-item-action px-3 py-2" href={url}>
       <div className="d-flex align-items-center">
-        <BookmarkIcon url={url} />
+        <BookmarkIcon icon={icon} />
         {title}
       </div>
     </a>
@@ -62,8 +55,9 @@ const BookmarkGroups = () => {
 
   const { options } = useOptions();
   const bookmarkGroups = useBookmarkGroups(options?.bookmarksPath);
+  const { bookmarkIcons, getBookmarkIcon } = useBookmarkIcons();
 
-  if (!options) return null;
+  if (!options || !bookmarkIcons) return null;
 
   if (!options.bookmarksPath) return (
     <div className="alert alert-info" role="alert">
@@ -80,6 +74,8 @@ const BookmarkGroups = () => {
   );
 
   if (!bookmarkGroups) return null;
+
+  each(bookmarkGroups, ({ bookmarks }) => each(bookmarks, bookmark => bookmark.icon = getBookmarkIcon(bookmark.url)));
 
   return (
     <div className="row">
