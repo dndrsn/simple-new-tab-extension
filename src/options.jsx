@@ -2,11 +2,8 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 // import { each, find, map } from 'lodash-es';
-import log from 'loglevel';
 
-
-
-log.setDefaultLevel('debug');
+// import { log } from './_common';
 
 
 const { chrome } = window;

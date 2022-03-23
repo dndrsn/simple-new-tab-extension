@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { map } from 'lodash-es';
-import log from 'loglevel';
 import urlJoin from 'url-join';
 
 import {
@@ -10,11 +9,9 @@ import {
   fetchPageFaviconUrl,
   getBookmarkIcons,
   getBookmarksTreeNode,
+  log,
   setBookmarkIcon,
 } from './common.js';
-
-
-log.setDefaultLevel('debug');
 
 
 const useBookmarkIconUrl = pageUrl => {

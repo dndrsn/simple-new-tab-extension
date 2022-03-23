@@ -5,6 +5,7 @@ import urlJoin from 'url-join';
 
 
 log.setDefaultLevel('debug');
+export { log };
 
 
 const _state = {};
