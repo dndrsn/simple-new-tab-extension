@@ -24,7 +24,7 @@ const compile = async ({ watch } = {}) => {
       },
     },
   });
-  if (!watch) logResult(result);
+  logResult(result);
 };
 
 

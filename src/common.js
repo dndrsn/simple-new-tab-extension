@@ -3,6 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { each, find, map, orderBy } from 'lodash-es';
 import log from 'loglevel';
 import urlJoin from 'url-join';
+import * as b64ArrayBuffer from 'base64-arraybuffer';
 
 
 log.setDefaultLevel('debug');
@@ -12,7 +13,7 @@ export { log };
 
 // ----- OPTIONS -----
 
-const getSyncedOptions = async () => {
+export const getSyncedOptions = async () => {
   const { options } = await chrome.storage.sync.get('options');
   return options;
 };
@@ -44,7 +45,12 @@ export const useOptions = () => {
 
 // ----- BOOKMARKS -----
 
-const getBookmarkGroups = async bookmarksPath => {
+export const getBookmarkGroups = async bookmarksPath => {
+
+  if (!bookmarksPath) {
+    const options = await getSyncedOptions();
+    bookmarksPath = options.bookmarksPath;
+  }
 
   const bookmarksTree = await chrome.bookmarks.getTree();
 
@@ -85,31 +91,35 @@ export const useBookmarkGroups = bookmarksPath => {
 
 // ----- BOOKMARK ICONS -----
 
-let _bookmarkIcons;
+export let _bookmarkIcons = false;
 
 
-const getBookmarkIcons = () => {
-  if (!_bookmarkIcons) _bookmarkIcons = JSON.parse(window.localStorage.getItem('bookmarkIcons') || '{}');
+const getBookmarkIcons = async () => {
+  if (!_bookmarkIcons) {
+    const data = await chrome.storage.local.get('bookmarkIcons');
+    _bookmarkIcons = data.bookmarkIcons;
+  }
   return _bookmarkIcons;
 };
 
 
-export const getBookmarkIcon = pageUrl => {
+export const getBookmarkIcon = async pageUrl => {
   const { origin } = new URL(pageUrl);
-  return getBookmarkIcons()[origin];
+
+  return (await getBookmarkIcons())[origin];
 };
 
 
-const setBookmarkIcons = bookmarkIcons => {
+const setBookmarkIcons = async bookmarkIcons => {
   _bookmarkIcons = bookmarkIcons;
-  window.localStorage.setItem('bookmarkIcons', JSON.stringify(bookmarkIcons));
+  await chrome.storage.local.set({ bookmarkIcons });
 };
 
 
-export const setBookmarkIcon = (pageUrl, iconUrl) => {
+export const setBookmarkIcon = async (pageUrl, iconUrl) => {
   const { origin } = new URL(pageUrl);
   setBookmarkIcons({
-    ..._bookmarkIcons,
+    ...(await getBookmarkIcons()),
     [origin]: iconUrl,
   });
 };
@@ -179,7 +189,7 @@ const fetchFaviconUrl = async pageUrl => {
 };
 
 
-const fetchImageAsDataUrl = async imageUrl => {
+export const fetchImageAsDataUrl = async imageUrl => {
   if (!imageUrl) return;
   try {
     const response = await fetch(imageUrl);
@@ -187,7 +197,7 @@ const fetchImageAsDataUrl = async imageUrl => {
     const contentType = response.headers.get('content-type');
     if (!contentType?.startsWith('image')) return;
     const arrayBuffer = await response.arrayBuffer();
-    const base64Data = arrayBufferToBase64(arrayBuffer);
+    const base64Data = b64ArrayBuffer.encode(arrayBuffer);
     if (!base64Data) return;
     const dataUrl = `data:${contentType};base64,${base64Data}`;
     return dataUrl;
@@ -197,15 +207,6 @@ const fetchImageAsDataUrl = async imageUrl => {
     console.error(err); // eslint-disable-line no-console
   }
 };
-
-
-const arrayBufferToBase64 = buffer => {
-  const bytes = [].slice.call(new Uint8Array(buffer));
-  let binary = '';
-  bytes.forEach((b) => binary += String.fromCharCode(b));
-  return window.btoa(binary);
-};
-
 
 
 // ----- MISC -----

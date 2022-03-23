@@ -18,7 +18,8 @@
   ],
   "permissions": [
     "bookmarks",
-    "storage"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "<all_urls>"

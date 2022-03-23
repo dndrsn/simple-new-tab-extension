@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { map } from 'lodash-es';
 
@@ -12,7 +12,16 @@ import {
 
 
 const BookmarkIcon = ({ url }) => {
-  const iconUrl = getBookmarkIcon(url) || '/assets/icons/globe-gray.svg';
+
+  const defaultIcon = '/assets/icons/globe-gray.svg';
+
+  const [iconUrl, setIconUrl] = useState(defaultIcon);
+
+  useEffect(async () => {
+    setIconUrl(await getBookmarkIcon(url) || defaultIcon);
+  }, []);
+
+
   return (
     <span className="mr-2 d-block">
       <img className="bookmark__icon d-block" alt="" src={iconUrl} />
