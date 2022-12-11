@@ -61,7 +61,7 @@ export const getBookmarkGroups = async bookmarksPath => {
     const parentPathNode = pathNode;
     pathNode = find(pathNode?.children, { title: pathElem });
     if (!pathNode) {
-      log.warn('Unable to find bookmarks path node:', pathElem);
+      log.info('Unable to find bookmarks path node:', pathElem);
       log.info('Path nodes:', parentPathNode?.children);
       return false;
     }

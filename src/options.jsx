@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { each } from 'lodash-es';
+import { debounce, each } from 'lodash-es';
 
 import {
   fetchBookmarkIconDataUrl,
@@ -17,6 +17,8 @@ const App = () => {
 
   const { options, setOption } = useOptions();
 
+  if (!options) return null;
+
   return (
     <div className="container mt-5">
       <h1>Simple New Tab Page</h1>
@@ -29,7 +31,15 @@ const App = () => {
 
 const Options = ({ options, setOption }) => {
 
-  const handleBookmarksInputChange = e => setOption('bookmarksPath', e.target.value);
+  const [bookmarksInputValue, setBookmarksInputValue] = useState(options.bookmarksPath || '');
+
+  const debouncedSetOption = useCallback(debounce((key, value) => setOption(key, value), 500), []);
+
+  const handleBookmarksInputChange = e => {
+    const value = e.target.value;
+    setBookmarksInputValue(value);
+    debouncedSetOption('bookmarksPath', value);
+  };
 
   return (
     <div className="options mt-5">
@@ -42,7 +52,7 @@ const Options = ({ options, setOption }) => {
             className="form-control"
             type="text"
             aria-describedby="bookmarksPathHelp"
-            value={options?.bookmarksPath || ''}
+            value={bookmarksInputValue}
             onChange={handleBookmarksInputChange}
           />
           <small id="bookmarksPathHelp" className="form-text text-muted">
