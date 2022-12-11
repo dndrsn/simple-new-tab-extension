@@ -56,13 +56,18 @@ export const getBookmarkGroups = async bookmarksPath => {
 
   const pathElems = bookmarksPath.split('/');
   let pathNode = bookmarksTree[0];
+
   each(pathElems, pathElem => {
+    const parentPathNode = pathNode;
     pathNode = find(pathNode?.children, { title: pathElem });
     if (!pathNode) {
-      log.warn('Unable to find boomarks path node:', pathElem);
+      log.warn('Unable to find bookmarks path node:', pathElem);
+      log.info('Path nodes:', parentPathNode?.children);
       return false;
     }
   });
+
+  if (!pathNode) return;
 
   const bookmarkGroups = map(pathNode.children, group => ({
     title: group.title,
