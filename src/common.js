@@ -1,9 +1,9 @@
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import * as b64ArrayBuffer from 'base64-arraybuffer';
 import { each, find, map, orderBy } from 'lodash-es';
 import log from 'loglevel';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import urlJoin from 'url-join';
-import * as b64ArrayBuffer from 'base64-arraybuffer';
 
 
 log.setDefaultLevel('debug');
@@ -28,9 +28,11 @@ export const useOptions = () => {
 
   const setOption = (key, val) => setOptions(options => ({ ...options, [key]: val }));
 
-  useEffect(async () => {
-    const syncedOptions = await getStoredOptions();
-    setOptions(options => ({ ...syncedOptions, ...options }));
+  useEffect(() => {
+    (async () => {
+      const syncedOptions = await getStoredOptions();
+      setOptions(options => ({ ...syncedOptions, ...options }));
+    })();
   }, []);
 
   useEffect(() => {
@@ -85,8 +87,10 @@ export const useBookmarkGroups = bookmarksPath => {
 
   const [bookmarkGroups, setBookmarkGroups] = useState();
 
-  useEffect(async () => {
-    if (bookmarksPath) setBookmarkGroups(await getBookmarkGroups(bookmarksPath));
+  useEffect(() => {
+    (async () => {
+      if (bookmarksPath) setBookmarkGroups(await getBookmarkGroups(bookmarksPath));
+    })();
   }, [bookmarksPath]);
 
   return bookmarkGroups;
@@ -133,9 +137,11 @@ export const useBookmarkIcons = () => {
     }));
   };
 
-  useEffect(async () => {
-    const storedBookmarkIcons = await getStoredBookmarkIcons();
-    setBookmarkIcons(storedBookmarkIcons);
+  useEffect(() => {
+    (async () => {
+      const storedBookmarkIcons = await getStoredBookmarkIcons();
+      setBookmarkIcons(storedBookmarkIcons);
+    })();
   }, []);
 
   useEffect(() => {

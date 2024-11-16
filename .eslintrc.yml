@@ -1,7 +1,0 @@
-
-extends:
-  - './node_modules/@vshift/common/configs/eslint-config-default.yml'
-globals:
-  chrome: readonly
-  fetch: readonly
-  FileReader: readonly

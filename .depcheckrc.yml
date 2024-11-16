@@ -1,0 +1,9 @@
+
+ignores:
+  - '~'
+  - eslint-config-vshift
+  - stylelint-config-vshift
+ignorePatterns:
+  - pub
+  - dist
+

@@ -1,7 +1,7 @@
 
-import React from 'react';
-import ReactDOM from 'react-dom';
 import { each, map } from 'lodash-es';
+import React from 'react';
+import { createRoot } from 'react-dom/client';
 
 import {
   useBookmarkIcons,
@@ -16,7 +16,7 @@ const BookmarkIcon = ({ icon }) => {
   const defaultIcon = '/assets/icons/globe-gray.svg';
 
   return (
-    <span className="mr-2 d-block">
+    <span className="me-2 d-block">
       <img className="bookmark__icon d-block" alt="" src={icon || defaultIcon} />
     </span>
   );
@@ -99,5 +99,6 @@ const App = () => {
 };
 
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);
 

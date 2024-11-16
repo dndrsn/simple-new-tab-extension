@@ -1,7 +1,7 @@
 
-import React, { useCallback, useState } from 'react';
-import ReactDOM from 'react-dom';
 import { debounce, each } from 'lodash-es';
+import React, { useCallback, useState } from 'react';
+import { createRoot } from 'react-dom/client';
 
 import {
   fetchBookmarkIconDataUrl,
@@ -104,5 +104,6 @@ const Utilities = ({ options }) => {
 };
 
 
-ReactDOM.render(<App />, document.getElementById('root'));
+const root = createRoot(document.getElementById('root'));
+root.render(<App />);
 

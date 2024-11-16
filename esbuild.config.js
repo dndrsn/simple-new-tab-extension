@@ -19,6 +19,8 @@ module.exports = {
       includePaths: ['node_modules'],
       sourceMap: 'out.map',
       sourceMapEmbed: true,
+      quietDeps: true,
+      silenceDeprecations: ['import', 'legacy-js-api'],
     }),
   ],
 };

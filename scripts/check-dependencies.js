@@ -1,23 +1,16 @@
 
-const depcheck = require('depcheck');
-const { each, first, isArray, isEmpty, keys, map } = require('lodash');
 const fs = require('fs');
 const path = require('path');
-const chalk = require('chalk');
 
-const { log } = require('../lib/logging');
-
-
-const depcheckConfig = require('../depcheck.config');
-
-
-const yarnRemoveCommand = packages => 'yarn remove ' + packages.join(' ');
+const colors = require('ansi-colors');
+const depcheck = require('depcheck');
+const { each, first, isArray, isEmpty, keys, map } = require('lodash');
+const yaml = require('yaml');
 
 
-const yarnAddCommand = packages => 'yarn add ' + keys(packages).join(' ');
+// eslint-disable-next-line no-console
+const log = { debug: console.log, info: console.info, error: console.error };
 
-
-// const dump = obj => yaml.dump(obj, { lineWidth: 120 });
 
 const formatDependencies = dependencies => {
   if (!isArray(dependencies)) dependencies = map(dependencies, (filePaths, dependency) => {
@@ -31,28 +24,33 @@ const formatDependencies = dependencies => {
 const checkDependencies = async () => {
 
   log.debug('Dependencies :: checking dependencies');
+
+  // compatibility w/ cli config processing
+  const depcheckConfig = yaml.parse(fs.readFileSync(path.join(process.cwd(), '.depcheckrc.yml'), 'utf8'));
+  depcheckConfig.ignoreMatches ??= depcheckConfig.ignores;
+
   const result = await depcheck(process.cwd(), depcheckConfig);
   if (first(result.dependencies)) {
     log.info('Dependencies :: unused dependencies:\n\n' + formatDependencies(result.dependencies) + '\n');
     log.debug(
-      'Dependencies :: to remove unused dependencies:',
-      chalk.green(yarnRemoveCommand(result.dependencies)),
+      'Dependencies :: remove unused dependencies:',
+      colors.cyan(result.dependencies.join(' ')),
       '\n',
     );
   }
   if (first(result.devDependencies)) {
     log.info('Dependencies :: unused dev dependencies:\n\n' + formatDependencies(result.devDependencies) + '\n');
     log.debug(
-      'Dependencies :: to remove unused dev dependencies:',
-      chalk.green(yarnRemoveCommand(result.devDependencies)),
+      'Dependencies :: remove unused dev dependencies:',
+      colors.cyan(result.devDependencies.join(' ')),
       '\n',
     );
   }
   if (result.missing && !isEmpty(result.missing)) {
     log.info('Dependencies :: missing dependencies:\n\n' + formatDependencies(result.missing) + '\n');
     log.debug(
-      'Dependencies :: to add missing dependencies:',
-      chalk.green(yarnAddCommand(result.missing)),
+      'Dependencies :: add missing dependencies:',
+      colors.cyan(keys(result.missing).join(' ')),
       '\n',
     );
   }

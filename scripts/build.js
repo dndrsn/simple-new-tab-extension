@@ -1,11 +1,12 @@
-const esbuild = require('esbuild');
-const cpx = require('cpx');
-const { each } = require('lodash');
 
-const { log } = require('../lib/logging');
-const Configuration = require('../lib/configuration');
-const esbuildConfig = require('../esbuild.config');
+const cpx = require('cpx');
+const esbuild = require('esbuild');
+const { each } = require('lodash');
+const yargs = require('yargs/yargs');
+
 const copyConfig = require('../copy.config');
+const esbuildConfig = require('../esbuild.config');
+const { log } = require('../lib/logging');
 
 
 const compile = async ({ watch } = {}) => {
@@ -15,16 +16,24 @@ const compile = async ({ watch } = {}) => {
     if (result.warnings?.[0]) log.warn(`Build :: warnings:\n${result.warnings.join('\n')}`);
   };
 
-  const result = await esbuild.build({
-    ...esbuildConfig,
-    watch: watch && {
-      onRebuild(error, result) {
-        if (error) log.error('Build :: source compiled with error');
-        else logResult(result);
+  esbuildConfig.plugins = [
+    ...(esbuildConfig.plugins || []),
+    {
+      name: 'logging',
+      setup: build => {
+        // onStart?  onError?
+        build.onEnd(logResult);
       },
     },
-  });
-  logResult(result);
+  ];
+
+  if (watch) {
+    const ctx = await esbuild.context(esbuildConfig);
+    await ctx.watch();
+  }
+  else {
+    await esbuild.build(esbuildConfig);
+  }
 };
 
 
@@ -66,11 +75,7 @@ const copy = async ({ watch } = {}) => {
 
 const main = async () => {
 
-  const options = [
-    { key: 'watch', type: 'boolean' },
-  ];
-
-  const config = new Configuration({ options });
+  const config = yargs(process.argv.slice(2)).parse();
 
   compile(config);
   copy(config);

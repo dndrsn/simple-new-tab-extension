@@ -1,8 +1,7 @@
 
 import { each, includes } from 'lodash-es';
+
 import { parseUrl } from './common';
-
-
 import {
   fetchImageAsDataUrl,
   getBookmarkGroups,
