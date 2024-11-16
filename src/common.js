@@ -108,7 +108,7 @@ const setStoredBookmarkIcons = async bookmarkIcons => {
 
 
 export const setStoredBookmarkIcon = async (pageUrl, iconUrl) => {
-  const { origin } = new URL(pageUrl);
+  const { origin } = parseUrl(pageUrl);
   setStoredBookmarkIcons({
     ...(await getStoredBookmarkIcons()),
     [origin]: iconUrl,
@@ -121,12 +121,12 @@ export const useBookmarkIcons = () => {
   const [bookmarkIcons, setBookmarkIcons] = useState();
 
   const getBookmarkIcon = pageUrl => {
-    const { origin } = new URL(pageUrl);
+    const { origin } = parseUrl(pageUrl);
     return bookmarkIcons?.[origin];
   };
 
   const setBookmarkIcon = (pageUrl, iconUrl) => {
-    const { origin } = new URL(pageUrl);
+    const { origin } = parseUrl(pageUrl);
     setBookmarkIcons(bookmarkIcons => ({
       ...bookmarkIcons,
       [origin]: iconUrl,
@@ -152,7 +152,9 @@ export const useBookmarkIcons = () => {
 
 export const fetchBookmarkIconDataUrl = async pageUrl => {
 
-  const { origin, hostname } = new URL(pageUrl);
+  const { origin, hostname } = parseUrl(pageUrl);
+
+  if (!origin || !hostname) return;
 
   const getRootDomain = domain => domain.split('.').slice(-2).join('.');
 
@@ -197,11 +199,11 @@ const fetchFaviconUrl = async pageUrl => {
       const iconPageUrl = redirectUrl || pageUrl;
       let url = faviconLinks[0].url;
       if (url.startsWith('/')) {
-        const { origin } = new URL(iconPageUrl);
+        const { origin } = parseUrl(iconPageUrl);
         url = urlJoin(origin, url);
       }
       else if (!url.match(/^[\w.+_-]+:/i)) {
-        const { origin, pathname } = new URL(iconPageUrl);
+        const { origin, pathname } = parseUrl(iconPageUrl);
         url = urlJoin(origin, pathname.replace(/\/[^/]*$/, ''), url);
       }
       return url;
@@ -246,4 +248,14 @@ export const useIsMounted = () => {
 };
 
 
+export const parseUrl = url => {
+  try {
+    return new URL(url);
+  }
+  catch {
+    // eslint-disable-next-line no-console
+    console.log('Unable to parse URL:', url);
+    return {};
+  }
+};
 

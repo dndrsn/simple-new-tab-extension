@@ -1,5 +1,7 @@
 
 import { each, includes } from 'lodash-es';
+import { parseUrl } from './common';
+
 
 import {
   fetchImageAsDataUrl,
@@ -20,10 +22,10 @@ const handleFaviconUpdate = async ({ url, favIconUrl }) => {
   const bookmarkOrigins = [];
   const bookmarkGroups = await getBookmarkGroups();
   each(bookmarkGroups, ({ bookmarks }) => each(bookmarks, bookmark => {
-    bookmarkOrigins.push(new URL(bookmark.url).origin);
+    bookmarkOrigins.push(parseUrl(bookmark.url).origin);
   }));
 
-  const urlOrigin = new URL(url).origin;
+  const urlOrigin = parseUrl(url).origin;
   if (!includes(bookmarkOrigins, urlOrigin)) return;
 
   const faviconDataUrl = await fetchImageAsDataUrl(favIconUrl);
