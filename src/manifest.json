@@ -10,19 +10,10 @@
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [
-    {
-       "matches": ["<all_urls>"],
-       "js": ["content-script.js"]
-    }
-  ],
   "permissions": [
     "bookmarks",
     "storage",
     "tabs"
-  ],
-  "host_permissions": [
-    "<all_urls>"
   ],
   "icons": {
     "16": "./assets/icons/bookmark-16.png",

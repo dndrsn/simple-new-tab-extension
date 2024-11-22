@@ -8,7 +8,6 @@ module.exports = {
     'src/index.jsx',
     'src/options.jsx',
     'src/background.js',
-    'src/content-script.js',
   ],
   bundle: true,
   sourcemap: 'inline',
