@@ -15,5 +15,10 @@ rules:
   '@stylistic/declaration-block-trailing-semicolon':
     - always
     - ignore: single-declaration
+ignoreFiles:
+  - node_modules/**/*
+  - pub/**/*
+  - dist/**/*
+
 
 

@@ -1,6 +1,0 @@
-
-node_modules
-
-# ignore pub and dist dirs
-pub/*
-dist/*
