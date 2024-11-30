@@ -1,6 +1,6 @@
 
-import { each, find, map } from 'lodash-es';
-import { useEffect, useMemo, useState } from 'react';
+import { debounce, each, find, map } from 'lodash-es';
+import { useEffect, useState } from 'react';
 
 
 // ----- LOGGING -----
@@ -12,26 +12,16 @@ export const log = { debug, info, warn, error };
 
 // ----- OPTIONS -----
 
-const getStoredOptions = async () => {
-  const { options } = await chrome.storage.sync.get('options');
-  return options;
-};
-
-
-const setStoredOptions = async options => chrome.storage.sync.set({ options });
-
+export const getStoredOptions = async () => (await chrome.storage.sync.get()).options;
+export const setStoredOptions = debounce(options => chrome.storage.sync.set({ options }), 1000);
 
 export const useOptions = () => {
 
   const [options, setOptions] = useState();
-
   const setOption = (key, val) => setOptions(options => ({ ...options, [key]: val }));
 
   useEffect(() => {
-    (async () => {
-      const syncedOptions = await getStoredOptions();
-      setOptions(options => ({ ...syncedOptions, ...options }));
-    })();
+    getStoredOptions().then(storedOptions => setOptions(storedOptions));
   }, []);
 
   useEffect(() => {
@@ -39,7 +29,7 @@ export const useOptions = () => {
     setStoredOptions(options);
   }, [options]);
 
-  return useMemo(() => ({ options, setOptions, setOption }), [options]);
+  return { options, setOptions, setOption };
 };
 
 

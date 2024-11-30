@@ -1,6 +1,5 @@
 
-import { debounce } from 'lodash-es';
-import React, { useCallback, useState } from 'react';
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { useOptions } from './common';
@@ -8,29 +7,23 @@ import { useOptions } from './common';
 
 const App = () => {
 
-  const { options, setOption } = useOptions();
-
-  if (!options) return null;
-
   return (
     <div className="container mt-5">
       <h1>Simple New Tab Page</h1>
-      <Options {...{ options, setOption }} />
+      <Options />
     </div>
   );
 };
 
 
-const Options = ({ options, setOption }) => {
+const Options = () => {
 
-  const [bookmarksInputValue, setBookmarksInputValue] = useState(options.bookmarksPath || '');
+  const { options = {}, setOption } = useOptions();
 
-  const debouncedSetOption = useCallback(debounce((key, value) => setOption(key, value), 500), []);
-
-  const handleBookmarksInputChange = e => {
+  const handleInputChange = e => {
+    const key = e.target.id;
     const value = e.target.value;
-    setBookmarksInputValue(value);
-    debouncedSetOption('bookmarksPath', value);
+    setOption(key, value);
   };
 
   return (
@@ -44,8 +37,8 @@ const Options = ({ options, setOption }) => {
             className="form-control"
             type="text"
             aria-describedby="bookmarksPathHelp"
-            value={bookmarksInputValue}
-            onChange={handleBookmarksInputChange}
+            value={options.bookmarksPath || ''}
+            onChange={handleInputChange}
           />
           <small id="bookmarksPathHelp" className="form-text text-muted">
             Path to bookmarks folder to use for new tab page.
