@@ -1,16 +1,9 @@
 
-import { debounce, each } from 'lodash-es';
+import { debounce } from 'lodash-es';
 import React, { useCallback, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 
-import {
-  fetchBookmarkIconDataUrl,
-  useBookmarkIcons,
-  useBookmarkGroups,
-  useIsMounted,
-  useOptions,
-  // log,
-} from './common';
+import { useOptions } from './common';
 
 
 const App = () => {
@@ -23,7 +16,6 @@ const App = () => {
     <div className="container mt-5">
       <h1>Simple New Tab Page</h1>
       <Options {...{ options, setOption }} />
-      <Utilities {...{ options }} />
     </div>
   );
 };
@@ -60,45 +52,6 @@ const Options = ({ options, setOption }) => {
           </small>
         </div>
       </form>
-    </div>
-  );
-};
-
-
-const Utilities = ({ options }) => {
-
-  const [updatingIcons, setUpdatingIcons] = useState(false);
-  const bookmarkGroups = useBookmarkGroups(options?.bookmarksPath);
-  const { setBookmarkIcon } = useBookmarkIcons();
-  const updateIconsDisabled = !bookmarkGroups || updatingIcons;
-
-  const isMounted = useIsMounted();
-
-  const updateBookmarkIcon = async bookmarkUrl => {
-    const bookmarkIconDataUrl = await fetchBookmarkIconDataUrl(bookmarkUrl);
-    if (bookmarkIconDataUrl) {
-      setBookmarkIcon(bookmarkUrl, bookmarkIconDataUrl);
-    }
-  };
-
-  const updateBookmarkIcons = async () => {
-    setUpdatingIcons(true);
-    const promises = [];
-    each(bookmarkGroups, ({ bookmarks }) => each(bookmarks, bookmark => {
-      promises.push(updateBookmarkIcon(bookmark.url));
-    }));
-    await Promise.all(promises);
-    isMounted && setUpdatingIcons(false);
-  };
-
-  return (
-    <div className="utilities mt-5">
-      <h2>Utilities</h2>
-      <p>
-        <button className="btn btn-primary" onClick={updateBookmarkIcons} disabled={updateIconsDisabled}>
-          Update Bookmark Icons
-        </button>
-      </p>
     </div>
   );
 };

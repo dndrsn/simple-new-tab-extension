@@ -7,7 +7,6 @@ module.exports = {
     'src/main.scss',
     'src/index.jsx',
     'src/options.jsx',
-    'src/background.js',
   ],
   bundle: true,
   sourcemap: 'inline',

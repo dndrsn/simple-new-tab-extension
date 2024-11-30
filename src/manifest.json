@@ -6,13 +6,18 @@
   "chrome_url_overrides": {
     "newtab": "index.html"
   },
-  "background": {
-    "service_worker": "background.js"
-  },
   "permissions": [
     "bookmarks",
+    "favicon",
     "storage",
     "tabs"
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["_favicon/*"],
+      "matches": ["<all_urls>"],
+      "extension_ids": ["*"]
+    }
   ],
   "icons": {
     "16": "./assets/icons/bookmark-16.png",

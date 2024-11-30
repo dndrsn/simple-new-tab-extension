@@ -1,33 +1,39 @@
 
-import { each, map } from 'lodash-es';
+import { map } from 'lodash-es';
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 
-import {
-  useBookmarkIcons,
-  useBookmarkGroups,
-  useOptions,
-  // log,
-} from './common.js';
+import { useBookmarkGroups, useOptions } from './common.js';
 
 
-const BookmarkIcon = ({ icon }) => {
+const getFaviconURL = pageUrl => {
 
-  const defaultIcon = '/assets/icons/globe-gray.svg';
+  const url = new URL(chrome.runtime.getURL('/_favicon/'));
+  url.searchParams.set('pageUrl', pageUrl);
+  url.searchParams.set('size', '32');
+
+  return url.toString();
+};
+
+
+const BookmarkIcon = ({ url }) => {
+
+  const defaultSrc = '/assets/icons/globe-gray.svg';
+  const iconSrc = getFaviconURL(url);
 
   return (
     <span className="me-2 d-block">
-      <img className="bookmark__icon d-block" alt="" src={icon || defaultIcon} />
+      <img className="bookmark__icon d-block" alt="" src={iconSrc || defaultSrc} />
     </span>
   );
 };
 
 
-const Bookmark = ({ title, url, icon }) => {
+const Bookmark = ({ title, url }) => {
   return (
     <a className="bookmark list-group-item list-group-item-action px-3 py-2" href={url}>
       <div className="d-flex align-items-center">
-        <BookmarkIcon icon={icon} />
+        <BookmarkIcon url={url} />
         {title}
       </div>
     </a>
@@ -55,9 +61,8 @@ const BookmarkGroups = () => {
 
   const { options } = useOptions();
   const bookmarkGroups = useBookmarkGroups(options?.bookmarksPath);
-  const { bookmarkIcons, getBookmarkIcon } = useBookmarkIcons();
 
-  if (!options || !bookmarkIcons) return null;
+  if (!options) return null;
 
   if (!options.bookmarksPath) return (
     <div className="alert alert-info" role="alert">
@@ -74,8 +79,6 @@ const BookmarkGroups = () => {
   );
 
   if (!bookmarkGroups) return null;
-
-  each(bookmarkGroups, ({ bookmarks }) => each(bookmarks, bookmark => bookmark.icon = getBookmarkIcon(bookmark.url)));
 
   return (
     <div className="row">
