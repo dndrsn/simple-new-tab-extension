@@ -1,5 +1,9 @@
 {
-  "private": true,
+  "name": "simple-new-tab",
+  "version": "1.0.0",
+  "description": "A simple bookmarks new tab page browser extension.",
+  "author": "Daniel Anderson",
+  "license": "MIT",
   "scripts": {
     "clean": "node ./scripts/clean",
     "build": "node ./scripts/build",
